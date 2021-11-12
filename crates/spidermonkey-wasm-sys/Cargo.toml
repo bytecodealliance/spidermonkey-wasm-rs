@@ -1,0 +1,14 @@
+[package]
+name = "spidermonkey-wasm-sys"
+version = "0.1.0"
+edition = "2018"
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+
+[build-dependencies]
+fs_extra = "1.2.0"
+bindgen = "0.59.1"
+cc = "1.0"
