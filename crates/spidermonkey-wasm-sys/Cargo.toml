@@ -12,3 +12,5 @@ opt-level = 3
 fs_extra = "1.2.0"
 bindgen = "0.59.1"
 cc = "1.0"
+walkdir = "2"
+

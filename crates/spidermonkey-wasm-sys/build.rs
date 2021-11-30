@@ -1,37 +1,8 @@
-use std::{env, fs::{create_dir_all, copy}, path::{PathBuf, Path}, process::Command};
-use fs_extra::{dir, remove_items};
+use std::{env, ffi::{OsStr, OsString}, path::{PathBuf, Path}};
+use fs_extra::dir;
+use walkdir::WalkDir;
 
-static LIB_DEPENDENCIES: &[&str] = &[
-    "js/src/build/libjs_static.a",
-    "wasm32-wasi/release/libjsrust.a"
-];
-
-static OBJ_DEPENDENCIES: &[&str] = &[
-    "mozglue/misc/AutoProfilerLabel.o",
-    "mozglue/misc/ConditionVariable_noop.o",
-    "mozglue/misc/Decimal.o",
-    "mozglue/misc/MmapFaultHandler.o",
-    "mozglue/Misc/Mutex_noop.o",
-    "mozglue/misc/Printf.o",
-    "mozglue/misc/StackWalk.o",
-    "mozglue/misc/TimeStamp.o",
-    "mozglue/misc/TimeStamp_posix.o",
-    "memory/build/Unified_cpp_memory_build0.o",
-    "memory/mozalloc/Unified_cpp_memory_mozalloc0.o",
-    "mfbt/Unified_cpp_mfbt0.o",
-    "mfbt/Unified_cpp_mfbt1.o",
-    "mozglue/misc/Uptime.o",
-    "mfbt/lz4.o",
-    "mfbt/lz4frame.o",
-    "mfbt/lz4hc.o",
-    "mfbt/xxhash.o",
-];
-
-
-static GECKO_DEV_BASE_PATH: &str = "gecko-dev";
-static GECKO_DEV_BUIL_DIR: &str = "obj-wasm32-unknown-wasi";
-static MOZ_CONFIG: &str = "mozconfig";
-const JS_CONF_DEFS: &str = "js/src/js-confdefs.h";
+static SPIDERMONKEY_BUILD_DIR: &str = "spidermonkey-wasm-build";
 
 const WHITELIST_TYPES: &'static [&'static str] = &["JS.*", "js::.*", "mozilla::.*"];
 
@@ -82,99 +53,71 @@ const BLACKLIST_TYPES: &'static [&'static str] = &[
     "JS::RootedValueArray",
 ];
 
+struct WasiSdk {
+    clang: PathBuf,
+    sysroot: PathBuf,
+    ar: PathBuf
+}
+
 fn main() {
     let out_dir = env::var_os("OUT_DIR").map(PathBuf::from).expect("could not find OUT_DIR");
-    let root = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from).expect("could not find root dir");
-    let gecko_dev_obj_dir = PathBuf::from(GECKO_DEV_BASE_PATH).join(GECKO_DEV_BUIL_DIR);
-    let mozconfig_path = root.join(MOZ_CONFIG);
+    let source_dir = PathBuf::from(SPIDERMONKEY_BUILD_DIR);
+    let source_include_dir = source_dir.join("include");
+    let source_lib_dir = source_dir.join("lib");
 
-    let include_dir = out_dir.join("include");
-    let lib_dir = out_dir.join("lib");
+    let out_include_dir = out_dir.join("include");
+    let out_lib_dir = out_dir.join("lib");
 
+    let sdk = WasiSdk {
+        clang: PathBuf::from("/opt/wasi-sdk/bin/clang++"),
+        sysroot: PathBuf::from("--sysroot=/opt/wasi-sdk/share/wasi-sysroot"),
+        ar: PathBuf::from("/opt/wasi-sdk/bin/ar"),
+    };
 
-    let sysroot = "--sysroot=/opt/wasi-sdk/share/wasi-sysroot";
-    let clang = "/opt/wasi-sdk/bin/clang++";
-    let ar = "/opt/wasi-sdk/bin/ar";
-
-    if !gecko_dev_obj_dir.exists() {
-        build_artifacts(&mozconfig_path);
-
-        let mut items = vec![];
-        if lib_dir.exists() {
-            items.push(&lib_dir);
-        }
-        if include_dir.exists() {
-            items.push(&include_dir);
-        }
-
-        remove_items(&items).unwrap();
+    if !source_dir.exists() {
+        panic!("SpiderMonkey build directory not found. Try updating git submodules via git submodule update --recursive --init");
     }
 
-    if !lib_dir.exists() || !include_dir.exists() {
-        // Copy header files from gecko-dev
-        let  copy_options = dir::CopyOptions::new();
-        dir::copy(gecko_dev_obj_dir.join("dist").join("include"), &out_dir, &copy_options).unwrap();
-        copy(gecko_dev_obj_dir.join(JS_CONF_DEFS), &include_dir.join("js-confdefs.h")).unwrap();
-
-        // Copy object dependencies and static libraries from gecko-dev
-        create_dir_all(&lib_dir).unwrap();
-        for obj in OBJ_DEPENDENCIES {
-            let obj_path = gecko_dev_obj_dir.join(obj);
-            let destination = lib_dir.join(obj_path.file_name().unwrap());
-            copy(obj_path, &destination).unwrap();
-        }
-
-        for lib in LIB_DEPENDENCIES {
-            let lib_path = gecko_dev_obj_dir.join(lib);
-            copy(&lib_path, lib_dir.join(&lib_path.file_name().unwrap())).unwrap();
-        }
+    if !source_include_dir.exists() || !source_lib_dir.exists() {
+        panic!("SpiderMonkey build artifacts not found.");
     }
 
+    if !out_include_dir.exists() {
+        let copy_options = dir::CopyOptions::new();
+        dir::copy(source_include_dir, &out_dir, &copy_options).expect("Could not copy header files to OUT directory");
+    }
+
+    if !out_lib_dir.exists() {
+        let copy_options = dir::CopyOptions::new();
+        dir::copy(source_lib_dir, &out_dir, &copy_options).expect("Could not copy lib directory to OUT directory");
+    }
 
     println!(
         "cargo:rustc-link-search={}",
-        lib_dir.display()
+        out_lib_dir.display()
     );
     println!("cargo:rustc-link-search=native=/opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasi");
     println!("cargo:rustc-link-search=native=/opt/wasi-sdk/lib/clang/11.0.0/lib/wasi");
 
-    compile_exports(clang, ar, sysroot, lib_dir.to_str().unwrap(), include_dir.to_str().unwrap());
+    compile_exports(&sdk, &out_lib_dir, &out_include_dir);
     println!("cargo:rustc-link-lib=static=jsrust");
     println!("cargo:rustc-link-lib=static=js_static");
     println!("cargo:rustc-link-lib=static=c++abi");
     println!("cargo:rustc-link-lib=static=clang_rt.builtins-wasm32");
 
-    generate_bindings(&out_dir);
+    generate_bindings(&out_dir, &sdk);
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=src/exports.h");
     println!("cargo:rerun-if-changed=src/exports.cpp");
 }
 
-fn build_artifacts(mozconfig_path: impl AsRef<Path>) {
-    // TODO: Find a way to avoid running this command
-    // if there's no need to.
-    Command::new("./mach")
-        .arg("bootstrap")
-        .arg("--application-choice=js")
-        .current_dir(GECKO_DEV_BASE_PATH)
-        .status()
-        .expect("Couldn't run ./mach bootstrap");
-
-    Command::new("./mach")
-        .env("MOZCONFIG", mozconfig_path.as_ref().to_str().unwrap())
-        .arg("build")
-        .current_dir(GECKO_DEV_BASE_PATH)
-        .status()
-        .expect("Couldn't run ./mach build");
-}
-
-fn compile_exports(clang: &str, ar: &str, sysroot: &str, lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
-    env::set_var("CXX", clang);
-    env::set_var("CXX_wasm32_wasi", clang);
-    env::set_var("CXXFLAGS", sysroot);
-    env::set_var("CXXFLAGS_wasm32_wasi", sysroot);
-    env::set_var("AR", ar);
-    env::set_var("AR_wasm32_wasi", ar);
+fn compile_exports(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
+    env::set_var("CXX", &wasi_sdk.clang);
+    env::set_var("CXX_wasm32_wasi", &wasi_sdk.clang);
+    env::set_var("CXXFLAGS", &wasi_sdk.sysroot);
+    env::set_var("CXXFLAGS_wasm32_wasi", &wasi_sdk.sysroot);
+    env::set_var("AR", &wasi_sdk.ar);
+    env::set_var("AR_wasm32_wasi", &wasi_sdk.ar);
 
     let mut builder = cc::Build::new();
 
@@ -201,20 +144,20 @@ fn compile_exports(clang: &str, ar: &str, sysroot: &str, lib_dir: impl AsRef<Pat
         .flag_if_supported("-Wno-invalid-offsetof")
         .flag_if_supported("-std=gnu++17");
 
-    for o in OBJ_DEPENDENCIES {
-        let path = PathBuf::from(o);
-        let file_name = path.file_name().unwrap();
-        builder.object(lib_dir.as_ref().join(file_name));
+    for entry in WalkDir::new(lib_dir).sort_by_file_name().into_iter().filter_map(|e| e.ok()) {
+        let entry_path = entry.path();
+        if entry_path.is_file() && entry_path.extension().unwrap() == "o" {
+            builder.object(entry_path);
+        }
     }
 
     builder
         .opt_level(2)
-        .compile("jsexports");
+        .compile("spidermonkey-wasm");
 }
 
-fn generate_bindings(dir: &Path) {
-
-    env::set_var("CLANG_PATH", "/opt/wasi-sdk/bin/clang++");
+fn generate_bindings(dir: &Path, wasi_sdk: &WasiSdk) {
+    env::set_var("CLANG_PATH", &wasi_sdk.clang);
 
     let mut config = bindgen::CodegenConfig::all();
     config &= !bindgen::CodegenConfig::CONSTRUCTORS;
@@ -250,7 +193,7 @@ fn generate_bindings(dir: &Path) {
         .clang_arg("-pipe")
         .clang_arg("-fno-omit-frame-pointer")
         .clang_arg("-funwind-tables")
-        .clang_args(&["--sysroot=/opt/wasi-sdk/share/wasi-sysroot", "--target=wasm32-wasi"]);
+        .clang_args(&[wasi_sdk.sysroot.to_str().unwrap(), "--target=wasm32-wasi"]);
 
     for ty in WHITELIST_TYPES {
         builder = builder.allowlist_type(ty);
