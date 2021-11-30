@@ -1,5 +1,5 @@
 <div align="center">
-  <h1><code>smwasm</code></h1>
+  <h1><code>spidermonkey-wasm-rs</code></h1>
 
   <strong>A <a href="https://bytecodealliance.org/">Bytecode Alliance</a> project</strong>
   <p>
