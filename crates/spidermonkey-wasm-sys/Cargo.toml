@@ -2,6 +2,13 @@
 name = "spidermonkey-wasm-sys"
 version = "0.1.0"
 edition = "2018"
+include = [
+  "spidermonkey-wasm-build",
+  "src/**/*",
+  "build.rs",
+  "vendor/**/*"
+  ".cargo/**/*",
+]
 
 [profile.release]
 opt-level = 3
@@ -13,4 +20,3 @@ fs_extra = "1.2.0"
 bindgen = "0.59.1"
 cc = "1.0"
 walkdir = "2"
-
