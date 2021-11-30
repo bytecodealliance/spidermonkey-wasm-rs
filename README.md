@@ -15,8 +15,9 @@
 
 ## Development
 
-- `git submodule update --recursive --init` to pull in [gecko-dev](https://github.com/mozilla/gecko-dev), which is pinned to a specific [commit](crates/spidermonkey-wasm-sys/COMMIT)
-- `cargo build --release --target=wasm32-wasi --package spidermonkey-wasm-sys`
+- `git submodule update --recursive --init` to pull in [spidermonkey-wasm-build](https://github.com/bytecodealliance/spidermonkey-wasm-build)
+- `cd crates/spidermonkey-wasm-sys/spidermonkey-wasm-build && ./download.sh`
+- `cd - && cargo build --release --target=wasm32-wasi --package spidermonkey-wasm-sys`
 - `cargo wasi test sanity` to run tests
 
 
