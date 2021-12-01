@@ -6,7 +6,7 @@ include = [
   "spidermonkey-wasm-build",
   "src/**/*",
   "build.rs",
-  "vendor/**/*"
+  "vendor/**/*",
   ".cargo/**/*",
 ]
 
