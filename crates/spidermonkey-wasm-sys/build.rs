@@ -4,10 +4,10 @@ use walkdir::WalkDir;
 
 static SPIDERMONKEY_BUILD_DIR: &str = "spidermonkey-wasm-build";
 
-const WHITELIST_TYPES: &'static [&'static str] = &["JS.*", "js::.*", "mozilla::.*"];
+const ALLOWED_TYPES: &'static [&'static str] = &["JS.*", "js::.*", "mozilla::.*"];
 const WASI_SDK_VERSION: &str = "12.0";
 
-const WHITELIST_VARS: &'static [&'static str] = &[
+const ALLOWED_VARS: &'static [&'static str] = &[
     "JS::NullHandleValue",
     "JS::TrueHandleValue",
     "JS::UndefinedHandleValue",
@@ -21,7 +21,7 @@ const WHITELIST_VARS: &'static [&'static str] = &[
     "exports::*",
 ];
 
-const WHITELIST_FUNCTIONS: &'static [&'static str] = &[
+const ALLOWED_FUNCTIONS: &'static [&'static str] = &[
     "JS_NewContext",
     "ExceptionStackOrNull",
     "JS::.*",
@@ -47,7 +47,7 @@ const OPAQUE_TYPES: &'static [&'static str] = &[
     "RefPtr_Proxy.*",
 ];
 
-const BLACKLIST_TYPES: &'static [&'static str] = &[
+const IGNORE_TYPES: &'static [&'static str] = &[
     "JS::HandleVector",
     "JS::MutableHandleVector",
     "JS::Rooted.*Vector",
@@ -216,15 +216,15 @@ fn generate_bindings(dir: &Path, wasi_sdk: &WasiSdk) {
         .clang_arg("-funwind-tables")
         .clang_args(&[format!("--sysroot={}", wasi_sdk.sysroot.display()), "--target=wasm32-wasi".into()]);
 
-    for ty in WHITELIST_TYPES {
+    for ty in ALLOWED_TYPES {
         builder = builder.allowlist_type(ty);
     }
 
-    for var in WHITELIST_VARS {
+    for var in ALLOWED_VARS {
         builder = builder.allowlist_var(var);
     }
 
-    for func in WHITELIST_FUNCTIONS {
+    for func in ALLOWED_FUNCTIONS {
         builder = builder.allowlist_function(func);
     }
 
@@ -232,7 +232,7 @@ fn generate_bindings(dir: &Path, wasi_sdk: &WasiSdk) {
         builder = builder.opaque_type(ty);
     }
 
-    for ty in BLACKLIST_TYPES {
+    for ty in IGNORE_TYPES {
         builder = builder.blocklist_type(ty);
     }
 
