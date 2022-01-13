@@ -1,6 +1,7 @@
 extern crate link_cplusplus;
 
 mod jsgc;
+mod jsrealm;
 
 #[cxx::bridge]
 pub mod jsffi {
@@ -15,6 +16,7 @@ pub mod jsffi {
     unsafe extern "C++" {
         include!("api.h");
 
+        type JSAutoRealm = crate::jsrealm::JSAutoRealm;
         type JSObject;
         type JSRuntime;
         type JSContext;
@@ -49,5 +51,11 @@ pub mod jsffi {
             hook: OnNewGlobalHookOption,
             realm_opts: &RealmOptions
         ) -> *mut JSObject;
+
+        #[namespace = "JS"]
+        unsafe fn EnterRealm(context: *mut JSContext, target: *mut JSObject) -> *mut Realm;
+
+        #[namespace = "JS"]
+        unsafe fn LeaveRealm(context: *mut JSContext, old_realm: *mut Realm);
     }
 }
