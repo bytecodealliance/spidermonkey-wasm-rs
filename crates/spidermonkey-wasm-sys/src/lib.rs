@@ -5,12 +5,19 @@ mod jsrealm;
 
 #[cxx::bridge]
 pub mod jsffi {
+
     #[repr(u32)]
     #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
     #[namespace = "JS"]
     enum OnNewGlobalHookOption {
         FireOnNewGlobalHook = 0,
         DontFireOnNewGlobalHook = 1,
+    }
+
+    struct CompileOptionsParams {
+        force_full_parse: bool,
+        file: String,
+        lineno: usize,
     }
 
     unsafe extern "C++" {
@@ -39,10 +46,12 @@ pub mod jsffi {
         #[namespace = "JS"]
         type OnNewGlobalHookOption; 
 
+
         fn JS_Init() -> bool;
         fn getDefaultGlobalClass() -> UniquePtr<JSClass>;
         fn makeDefaultRealmOptions() -> *mut RealmOptions;
 
+        unsafe fn NewOwningCompileOptions(context: *mut JSContext, opts: &CompileOptionsParams) -> UniquePtr<OwningCompileOptions>;
         unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
         unsafe fn JS_NewGlobalObject(
             context: *mut JSContext,
@@ -57,5 +66,8 @@ pub mod jsffi {
 
         #[namespace = "JS"]
         unsafe fn LeaveRealm(context: *mut JSContext, old_realm: *mut Realm);
+
+        #[namespace = "JS"]
+        type OwningCompileOptions;
     }
 }

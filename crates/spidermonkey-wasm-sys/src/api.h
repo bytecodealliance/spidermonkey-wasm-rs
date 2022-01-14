@@ -37,6 +37,10 @@
 #include "js/friend/WindowProxy.h"
 #include "js/experimental/JitInfo.h"
 #include "js/experimental/TypedData.h"
+#include "spidermonkey-wasm-sys/src/lib.rs.h"
+
+struct CompileOptionsParams;
 
 std::unique_ptr<JSClass> getDefaultGlobalClass();
+std::unique_ptr<JS::OwningCompileOptions> NewOwningCompileOptions(JSContext* context, const CompileOptionsParams &opts);
 JS::RealmOptions* makeDefaultRealmOptions();
