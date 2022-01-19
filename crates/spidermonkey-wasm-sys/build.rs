@@ -8,13 +8,14 @@ const WASI_SDK_VERSION: &str = "12.0";
 
 struct WasiSdk {
     cxx: PathBuf,
-    clang: PathBuf,
     sysroot: PathBuf,
     ar: PathBuf,
     search_paths: Vec<PathBuf>,
 }
 
 fn main() {
+    let sdk = derive_wasi_sdk();
+
     let out_dir = env::var_os("OUT_DIR").map(PathBuf::from).expect("could not find OUT_DIR");
     let source_dir = PathBuf::from(SPIDERMONKEY_BUILD_DIR);
     let source_include_dir = source_dir.join("include");
@@ -22,8 +23,6 @@ fn main() {
 
     let out_include_dir = out_dir.join("include");
     let out_lib_dir = out_dir.join("lib");
-
-    let sdk = derive_wasi_sdk();
 
     if !source_dir.exists() {
         panic!("SpiderMonkey build directory not found. Try updating git submodules via git submodule update --recursive --init");
@@ -65,17 +64,7 @@ fn main() {
 }
 
 fn bridge(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
-    env::set_var("CXX", &wasi_sdk.cxx);
-    env::set_var("CXX_wasm32_wasi", &wasi_sdk.cxx);
-    env::set_var("CC", &wasi_sdk.clang);
-    env::set_var("CC_wasm32_wasi", &wasi_sdk.clang);
-    env::set_var("CXXFLAGS", format!("--sysroot={}", &wasi_sdk.sysroot.display()));
-    env::set_var("CXXFLAGS_wasm32_wasi", format!("--sysroot={}", &wasi_sdk.sysroot.display()));
-    env::set_var("AR", &wasi_sdk.ar);
-    env::set_var("AR_wasm32_wasi", &wasi_sdk.ar);
-
     let mut builder = cxxbridge("src/lib.rs");
-
     builder
         .cpp(true)
         .cpp_link_stdlib("c++")
@@ -127,7 +116,6 @@ fn derive_wasi_sdk() -> WasiSdk {
     let base_path = root.join("vendor").join(host).join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
 
     WasiSdk {
-        clang: base_path.join("bin").join("clang"),
         cxx: base_path.join("bin").join("clang"),
         sysroot: base_path.join("share").join("wasi-sysroot"),
         ar: base_path.join("bin").join("ar"),
