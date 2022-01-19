@@ -1,67 +1,21 @@
 use std::{env, path::{PathBuf, Path}};
 use fs_extra::dir;
 use walkdir::WalkDir;
+use cxx_build::bridge as cxxbridge;
 
 static SPIDERMONKEY_BUILD_DIR: &str = "spidermonkey-wasm-build";
-
-const ALLOWED_TYPES: &'static [&'static str] = &["JS.*", "js::.*", "mozilla::.*"];
 const WASI_SDK_VERSION: &str = "12.0";
 
-const ALLOWED_VARS: &'static [&'static str] = &[
-    "JS::NullHandleValue",
-    "JS::TrueHandleValue",
-    "JS::UndefinedHandleValue",
-    "JSCLASS_.*",
-    "JSFUN_.*",
-    "JSITER_.*",
-    "JSPROP_.*",
-    "JSREG_.*",
-    "JS_.*",
-    "js::Proxy.*",
-    "exports::*",
-];
-
-const ALLOWED_FUNCTIONS: &'static [&'static str] = &[
-    "JS_NewContext",
-    "ExceptionStackOrNull",
-    "JS::.*",
-    "js::.*",
-    "exports::.*",
-    "JS_.*",
-    ".*_TO_JSID",
-    "JS_DeprecatedStringHasLatin1Chars",
-];
-
-const OPAQUE_TYPES: &'static [&'static str] = &[
-    "JS::Auto.*Impl",
-    "JS::StackGCVector.*",
-    "JS::PersistentRooted.*",
-    "JS::detail::CallArgsBase.*",
-    "js::detail::UniqueSelector.*",
-    "mozilla::BufferList",
-    "mozilla::Maybe.*",
-    "mozilla::UniquePtr.*",
-    "mozilla::Variant",
-    "mozilla::Hash.*",
-    "mozilla::detail::Hash.*",
-    "RefPtr_Proxy.*",
-];
-
-const IGNORE_TYPES: &'static [&'static str] = &[
-    "JS::HandleVector",
-    "JS::MutableHandleVector",
-    "JS::Rooted.*Vector",
-    "JS::RootedValueArray",
-];
-
 struct WasiSdk {
-    clang: PathBuf,
+    cxx: PathBuf,
     sysroot: PathBuf,
     ar: PathBuf,
     search_paths: Vec<PathBuf>,
 }
 
 fn main() {
+    let sdk = derive_wasi_sdk();
+
     let out_dir = env::var_os("OUT_DIR").map(PathBuf::from).expect("could not find OUT_DIR");
     let source_dir = PathBuf::from(SPIDERMONKEY_BUILD_DIR);
     let source_include_dir = source_dir.join("include");
@@ -69,8 +23,6 @@ fn main() {
 
     let out_include_dir = out_dir.join("include");
     let out_lib_dir = out_dir.join("lib");
-
-    let sdk = derive_wasi_sdk();
 
     if !source_dir.exists() {
         panic!("SpiderMonkey build directory not found. Try updating git submodules via git submodule update --recursive --init");
@@ -99,55 +51,29 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", path.display());
     }
 
-    compile_exports(&sdk, &out_lib_dir, &out_include_dir);
     println!("cargo:rustc-link-lib=static=jsrust");
     println!("cargo:rustc-link-lib=static=js_static");
     println!("cargo:rustc-link-lib=static=c++abi");
     println!("cargo:rustc-link-lib=static=clang_rt.builtins-wasm32");
+    bridge(&sdk, &out_lib_dir, &out_include_dir);
 
-    generate_bindings(&out_dir, &sdk);
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=src/exports.h");
-    println!("cargo:rerun-if-changed=src/exports.cpp");
+    println!("cargo:rerun-if-changed=src/api.h");
+    println!("cargo:rerun-if-changed=src/api.cpp");
+    println!("cargo:rerun-if-changed=src/lib.rs");
 }
 
-fn derive_wasi_sdk() -> WasiSdk {
-    let root = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from).expect("could not retrieve root dir");
-    let host = match std::env::consts::OS {
-        p @ "linux" => p,
-        p @ "macos" => p,
-        p => panic!("{} platform not supported", p),
-    };
-
-    let base_path = root.join("vendor").join(host).join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
-
-    WasiSdk {
-        clang: base_path.join("bin").join("clang++"),
-        sysroot: base_path.join("share").join("wasi-sysroot"),
-        ar: base_path.join("bin").join("ar"),
-        search_paths: vec![
-            base_path.join("share").join("wasi-sysroot").join("lib").join("wasm32-wasi"),
-            base_path.join("lib").join("clang").join("11.0.0").join("lib").join("wasi")
-        ]
-    }
-}
-
-fn compile_exports(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
-    env::set_var("CXX", &wasi_sdk.clang);
-    env::set_var("CXX_wasm32_wasi", &wasi_sdk.clang);
-    env::set_var("CXXFLAGS", format!("--sysroot={}", &wasi_sdk.sysroot.display()));
-    env::set_var("CXXFLAGS_wasm32_wasi", format!("--sysroot={}", &wasi_sdk.sysroot.display()));
-    env::set_var("AR", &wasi_sdk.ar);
-    env::set_var("AR_wasm32_wasi", &wasi_sdk.ar);
-
-    let mut builder = cc::Build::new();
-
+fn bridge(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
+    let mut builder = cxxbridge("src/lib.rs");
     builder
         .cpp(true)
         .cpp_link_stdlib("c++")
-        .file("src/exports.cpp")
+        .compiler(&wasi_sdk.cxx)
+        .archiver(&wasi_sdk.ar)
+        .file("src/api.cpp")
         .include(include_dir)
-        .flag("-DRUST_BINDGEN")
+        .include("src")
+        .target("wasm32-wasi")
         .flag_if_supported("-Wall")
         .flag_if_supported("-Werror")
         .flag_if_supported("-Qunused-arguments")
@@ -163,7 +89,8 @@ fn compile_exports(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: i
         .flag_if_supported("-fno-omit-frame-pointer")
         .flag_if_supported("-funwind-tables")
         .flag_if_supported("-Wno-invalid-offsetof")
-        .flag_if_supported("-std=gnu++17");
+        .flag_if_supported("-std=gnu++17")
+        .flag_if_supported(&format!("--sysroot={}", &wasi_sdk.sysroot.display()));
 
     for entry in WalkDir::new(lib_dir).sort_by_file_name().into_iter().filter_map(|e| e.ok()) {
         let entry_path = entry.path();
@@ -175,71 +102,26 @@ fn compile_exports(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: i
     builder
         .opt_level(2)
         .compile("spidermonkey-wasm");
+
 }
 
-fn generate_bindings(dir: &Path, wasi_sdk: &WasiSdk) {
-    env::set_var("CLANG_PATH", &wasi_sdk.clang);
+fn derive_wasi_sdk() -> WasiSdk {
+    let root = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from).expect("could not retrieve root dir");
+    let host = match std::env::consts::OS {
+        p @ "linux" => p,
+        p @ "macos" => p,
+        p => panic!("{} platform not supported", p),
+    };
 
-    let mut config = bindgen::CodegenConfig::all();
-    config &= !bindgen::CodegenConfig::CONSTRUCTORS;
-    config &= !bindgen::CodegenConfig::DESTRUCTORS;
-    config &= !bindgen::CodegenConfig::METHODS;
+    let base_path = root.join("vendor").join(host).join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
 
-    let bindings_file = dir.join("bindings.rs");
-
-    let mut builder = bindgen::builder()
-        .rust_target(bindgen::RustTarget::Stable_1_47)
-        .header("src/exports.h")
-        .rustified_enum(".*")
-        .size_t_is_usize(true)
-        .enable_cxx_namespaces()
-        .with_codegen_config(config)
-        .clang_arg("-I")
-        .clang_arg(dir.join("include").to_str().expect("UTF-8"))
-        .clang_arg("-x")
-        .clang_arg("c++")
-        .clang_arg("-std=gnu++17")
-        .clang_arg("-Wall")
-        .clang_arg("-Werror")
-        .clang_arg("-Wno-invalid-offsetof")
-        .clang_arg("-Qunused-arguments")
-        .clang_arg("-Wno-unused-private-field")
-        .clang_arg("-fno-aligned-new")
-        .clang_arg("-mthread-model")
-        .clang_arg("single")
-        .clang_arg("-fPIC")
-        .clang_arg("-fno-rtti")
-        .clang_arg("-fno-exceptions")
-        .clang_arg("-fno-math-errno")
-        .clang_arg("-pipe")
-        .clang_arg("-fno-omit-frame-pointer")
-        .clang_arg("-funwind-tables")
-        .clang_args(&[format!("--sysroot={}", wasi_sdk.sysroot.display()), "--target=wasm32-wasi".into()]);
-
-    for ty in ALLOWED_TYPES {
-        builder = builder.allowlist_type(ty);
+    WasiSdk {
+        cxx: base_path.join("bin").join("clang"),
+        sysroot: base_path.join("share").join("wasi-sysroot"),
+        ar: base_path.join("bin").join("ar"),
+        search_paths: vec![
+            base_path.join("share").join("wasi-sysroot").join("lib").join("wasm32-wasi"),
+            base_path.join("lib").join("clang").join("11.0.0").join("lib").join("wasi")
+        ]
     }
-
-    for var in ALLOWED_VARS {
-        builder = builder.allowlist_var(var);
-    }
-
-    for func in ALLOWED_FUNCTIONS {
-        builder = builder.allowlist_function(func);
-    }
-
-    for ty in OPAQUE_TYPES {
-        builder = builder.opaque_type(ty);
-    }
-
-    for ty in IGNORE_TYPES {
-        builder = builder.blocklist_type(ty);
-    }
-
-    builder
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        .generate()
-        .expect("could not generate bindings")
-        .write_to_file(&bindings_file)
-        .expect("could not write bindings file");
 }
