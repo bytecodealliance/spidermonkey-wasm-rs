@@ -32,3 +32,11 @@ std::unique_ptr<JS::OwningCompileOptions> NewOwningCompileOptions(JSContext* con
 
   return owningOpts;
 }
+
+bool InitDefaultSelfHostedCode(JSContext* context) {
+  return JS::InitSelfHostedCode(context);
+}
+
+bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src, JS::MutableHandle<JS::Value> rval) {
+  return JS::Evaluate(context, opts, src, rval);
+}

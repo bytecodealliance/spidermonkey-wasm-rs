@@ -38,9 +38,15 @@
 #include "js/experimental/JitInfo.h"
 #include "js/experimental/TypedData.h"
 #include "spidermonkey-wasm-sys/src/lib.rs.h"
+#include "rust/cxx.h"
 
 struct CompileOptionsParams;
+
+typedef JS::SourceText<mozilla::Utf8Unit> Utf8UnitSourceText;
+typedef JS::SourceText<char16_t> U16SourceText;
 
 std::unique_ptr<JSClass> getDefaultGlobalClass();
 std::unique_ptr<JS::OwningCompileOptions> NewOwningCompileOptions(JSContext* context, const CompileOptionsParams &opts);
 JS::RealmOptions* makeDefaultRealmOptions();
+bool InitDefaultSelfHostedCode(JSContext* context);
+bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src, JS::MutableHandle<JS::Value> rval);

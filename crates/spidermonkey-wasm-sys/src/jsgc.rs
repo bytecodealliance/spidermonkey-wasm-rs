@@ -1,15 +1,19 @@
 use crate::jsffi::{
-    RootedObject, JSContext, JSObject,
+    RootedObject, JSContext, JSObject, Value,
+    HandleObject, MutableHandleObject, MutableHandleValue,
     AutoRooterListHeads, GeckoProfilerThread, Realm, Zone
 };
 use std::{ffi::c_void, ptr};
 use cxx::{type_id, ExternType};
+
+// -- ROOTING
 
 unsafe impl ExternType for RootingContext {
     type Id = type_id!("RootingContext");
     type Kind = cxx::kind::Opaque;
 }
 
+#[allow(non_snake_case)]
 #[repr(C)]
 pub struct RootingContext {
     pub stackRoots_: [u32; 15usize],
@@ -22,7 +26,7 @@ pub struct RootingContext {
 }
 
 unsafe impl ExternType for RootedObject {
-    type Id = type_id!("RootedObject");
+    type Id = type_id!("JS::RootedObject");
     type Kind = cxx::kind::Opaque;
 }
 
@@ -110,8 +114,35 @@ pub trait JSRootKind {
 
 impl JSRootKind for *mut JSObject {
     fn root_kind() -> RootKind {
-        return RootKind::Object;
+        RootKind::Object
     }
 }
 
+impl JSRootKind for Value {
+    fn root_kind() -> RootKind {
+        RootKind::Value
+    }
+}
 
+// HANDLE
+
+unsafe impl ExternType for HandleObject {
+    type Id = type_id!("JS::HandleObject");
+    type Kind = cxx::kind::Opaque;
+}
+
+unsafe impl ExternType for MutableHandleObject {
+    type Id = type_id!("JS::MutableHandleObject");
+    type Kind = cxx::kind::Opaque;
+}
+
+unsafe impl ExternType for MutableHandleValue {
+    type Id = type_id!("JS::MutableHandleValue");
+    type Kind = cxx::kind::Trivial;
+}
+pub struct Handle<T> {
+    pub ptr: *const T
+}
+pub struct MutableHandle<T> {
+    pub ptr: *mut T
+}
