@@ -8,24 +8,30 @@ mod integration {
         assert!(jsffi::JS_Init());
 
         unsafe {
-            let context = jsffi::JS_NewContext(32 * 32 * 1024 , ptr::null_mut());
+            let context = jsffi::JS_NewContext(32 * 32 * 1024, ptr::null_mut());
             assert!(!context.is_null());
             assert!(jsffi::InitDefaultSelfHostedCode(context));
             let realm_opts = jsffi::makeDefaultRealmOptions();
-            let global_object = jsgc::Rooted::new(context, jsffi::JS_NewGlobalObject(
+            let global_object = jsgc::Rooted::new(
                 context,
-                global_class.into_raw(),
-                ptr::null_mut(),
-                jsffi::OnNewGlobalHookOption::FireOnNewGlobalHook,
-                &*realm_opts,
-            ));
+                jsffi::JS_NewGlobalObject(
+                    context,
+                    global_class.into_raw(),
+                    ptr::null_mut(),
+                    jsffi::OnNewGlobalHookOption::FireOnNewGlobalHook,
+                    &*realm_opts,
+                ),
+            );
 
             let _ar = jsrealm::JSAutoRealm::new(context, global_object.ptr);
-            let owning_compile_options = jsffi::NewOwningCompileOptions(context, &jsffi::CompileOptionsParams {
-                force_full_parse: false,
-                lineno: 1,
-                file: "eval.js".into(),
-            });
+            let owning_compile_options = jsffi::NewOwningCompileOptions(
+                context,
+                &jsffi::CompileOptionsParams {
+                    force_full_parse: false,
+                    lineno: 1,
+                    file: "eval.js".into(),
+                },
+            );
 
             let mut undefined_value = jsffi::UndefinedValue();
             let rval = jsgc::MutableHandle {
@@ -43,7 +49,7 @@ mod integration {
                 context,
                 &owning_compile_options,
                 std::pin::Pin::new(&mut source),
-                rval
+                rval,
             );
 
             let result = undefined_value.toInt32();

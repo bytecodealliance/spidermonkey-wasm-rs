@@ -1,5 +1,5 @@
-use cxx::{ExternType, type_id, kind};
-use crate::jsffi::{Utf8UnitSourceText, U16SourceText};
+use crate::jsffi::{U16SourceText, Utf8UnitSourceText};
+use cxx::{kind, type_id, ExternType};
 
 unsafe impl ExternType for Utf8UnitSourceText {
     type Id = type_id!("Utf8UnitSourceText");
