@@ -11,13 +11,21 @@ jobs:
     name: Test + Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       
+      - name: Download SpiderMonkey build artifacts
+        run: |
+          cd crates/spidermonkey-wasm-sys/spidermonkey-wasm-build/
+          ./download.sh
+          cd -
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: 1.56.0
+          toolchain: 1.56.1
           default: true
           components: clippy, rustfmt
 
