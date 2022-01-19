@@ -1,10 +1,9 @@
 use crate::jsffi::{
-    RootedObject, JSContext, JSObject, Value,
-    HandleObject, MutableHandleObject, MutableHandleValue,
-    AutoRooterListHeads, GeckoProfilerThread, Realm, Zone
+    AutoRooterListHeads, GeckoProfilerThread, HandleObject, JSContext, JSObject,
+    MutableHandleObject, MutableHandleValue, Realm, RootedObject, Value, Zone,
 };
-use std::{ffi::c_void, ptr};
 use cxx::{type_id, ExternType};
+use std::{ffi::c_void, ptr};
 
 // -- ROOTING
 
@@ -35,7 +34,7 @@ unsafe impl ExternType for RootedObject {
 pub struct Rooted<T> {
     pub stack: *mut *mut Rooted<*mut c_void>,
     pub prev: *mut Rooted<*mut c_void>,
-    pub ptr: T
+    pub ptr: T,
 }
 
 impl<T> Default for Rooted<T> {
@@ -49,16 +48,23 @@ impl<T> Default for Rooted<T> {
 }
 
 impl<T> Rooted<T> {
-    pub fn new(context: *mut JSContext, ptr: T) -> Self where T: JSRootKind {
+    pub fn new(context: *mut JSContext, ptr: T) -> Self
+    where
+        T: JSRootKind,
+    {
         let mut rooted = Self::default();
         rooted.root(context, ptr);
         rooted
     }
 
-    fn root(&mut self, context: *mut JSContext, ptr: T) where T: JSRootKind {
+    fn root(&mut self, context: *mut JSContext, ptr: T)
+    where
+        T: JSRootKind,
+    {
         let kind = T::root_kind() as usize;
         let rooting_context = context as *mut RootingContext;
-        let root_stack: *mut *mut Rooted<*mut c_void> = unsafe { &mut (*rooting_context).stackRoots_[kind] as *mut _ as *mut _ };
+        let root_stack: *mut *mut Rooted<*mut c_void> =
+            unsafe { &mut (*rooting_context).stackRoots_[kind] as *mut _ as *mut _ };
 
         self.stack = root_stack;
         unsafe {
@@ -141,8 +147,8 @@ unsafe impl ExternType for MutableHandleValue {
     type Kind = cxx::kind::Trivial;
 }
 pub struct Handle<T> {
-    pub ptr: *const T
+    pub ptr: *const T,
 }
 pub struct MutableHandle<T> {
-    pub ptr: *mut T
+    pub ptr: *mut T,
 }

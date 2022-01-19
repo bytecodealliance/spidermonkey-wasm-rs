@@ -1,4 +1,4 @@
-.PHONY: test build
+.PHONY: test build build-release
 
 makefile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root_dir := $(dir $(makefile_path))

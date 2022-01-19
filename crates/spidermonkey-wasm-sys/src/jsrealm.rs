@@ -1,5 +1,5 @@
-use cxx::{ExternType, type_id, kind};
-use crate::jsffi::{self, JSContext, JSObject, EnterRealm, LeaveRealm};
+use crate::jsffi::{self, EnterRealm, JSContext, JSObject, LeaveRealm};
+use cxx::{kind, type_id, ExternType};
 
 unsafe impl ExternType for JSAutoRealm {
     type Id = type_id!("JSAutoRealm");

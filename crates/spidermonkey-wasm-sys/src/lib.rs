@@ -2,8 +2,8 @@ extern crate link_cplusplus;
 
 pub mod jsgc;
 pub mod jsrealm;
-pub mod jsval;
 pub mod jssourcetext;
+pub mod jsval;
 
 #[cxx::bridge]
 pub mod jsffi {
@@ -60,7 +60,7 @@ pub mod jsffi {
         #[namespace = "JS"]
         type RealmOptions;
         #[namespace = "JS"]
-        type OnNewGlobalHookOption; 
+        type OnNewGlobalHookOption;
         #[namespace = "JS"]
         type OwningCompileOptions;
         #[namespace = "JS"]
@@ -71,7 +71,10 @@ pub mod jsffi {
         fn makeDefaultRealmOptions() -> *mut RealmOptions;
 
         unsafe fn InitDefaultSelfHostedCode(context: *mut JSContext) -> bool;
-        unsafe fn NewOwningCompileOptions(context: *mut JSContext, opts: &CompileOptionsParams) -> UniquePtr<OwningCompileOptions>;
+        unsafe fn NewOwningCompileOptions(
+            context: *mut JSContext,
+            opts: &CompileOptionsParams,
+        ) -> UniquePtr<OwningCompileOptions>;
         unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
         unsafe fn JS_NewGlobalObject(
             context: *mut JSContext,
@@ -79,7 +82,7 @@ pub mod jsffi {
             principals: *mut JSPrincipals,
             hook: OnNewGlobalHookOption,
             // TODO: verify this signature
-            realm_opts: &RealmOptions
+            realm_opts: &RealmOptions,
         ) -> *mut JSObject;
 
         #[namespace = "JS"]

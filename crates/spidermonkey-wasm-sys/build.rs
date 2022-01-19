@@ -1,7 +1,10 @@
-use std::{env, path::{PathBuf, Path}};
-use fs_extra::dir;
-use walkdir::WalkDir;
 use cxx_build::bridge as cxxbridge;
+use fs_extra::dir;
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
+use walkdir::WalkDir;
 
 static SPIDERMONKEY_BUILD_DIR: &str = "spidermonkey-wasm-build";
 const WASI_SDK_VERSION: &str = "12.0";
@@ -16,7 +19,9 @@ struct WasiSdk {
 fn main() {
     let sdk = derive_wasi_sdk();
 
-    let out_dir = env::var_os("OUT_DIR").map(PathBuf::from).expect("could not find OUT_DIR");
+    let out_dir = env::var_os("OUT_DIR")
+        .map(PathBuf::from)
+        .expect("could not find OUT_DIR");
     let source_dir = PathBuf::from(SPIDERMONKEY_BUILD_DIR);
     let source_include_dir = source_dir.join("include");
     let source_lib_dir = source_dir.join("lib");
@@ -34,18 +39,17 @@ fn main() {
 
     if !out_include_dir.exists() {
         let copy_options = dir::CopyOptions::new();
-        dir::copy(source_include_dir, &out_dir, &copy_options).expect("Could not copy header files to OUT directory");
+        dir::copy(source_include_dir, &out_dir, &copy_options)
+            .expect("Could not copy header files to OUT directory");
     }
 
     if !out_lib_dir.exists() {
         let copy_options = dir::CopyOptions::new();
-        dir::copy(source_lib_dir, &out_dir, &copy_options).expect("Could not copy lib directory to OUT directory");
+        dir::copy(source_lib_dir, &out_dir, &copy_options)
+            .expect("Could not copy lib directory to OUT directory");
     }
 
-    println!(
-        "cargo:rustc-link-search={}",
-        out_lib_dir.display()
-    );
+    println!("cargo:rustc-link-search={}", out_lib_dir.display());
 
     for path in &sdk.search_paths {
         println!("cargo:rustc-link-search=native={}", path.display());
@@ -92,36 +96,51 @@ fn bridge(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef
         .flag_if_supported("-std=gnu++17")
         .flag_if_supported(&format!("--sysroot={}", &wasi_sdk.sysroot.display()));
 
-    for entry in WalkDir::new(lib_dir).sort_by_file_name().into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(lib_dir)
+        .sort_by_file_name()
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
         let entry_path = entry.path();
         if entry_path.is_file() && entry_path.extension().unwrap() == "o" {
             builder.object(entry_path);
         }
     }
 
-    builder
-        .opt_level(2)
-        .compile("spidermonkey-wasm");
-
+    builder.opt_level(2).compile("spidermonkey-wasm");
 }
 
 fn derive_wasi_sdk() -> WasiSdk {
-    let root = env::var_os("CARGO_MANIFEST_DIR").map(PathBuf::from).expect("could not retrieve root dir");
+    let root = env::var_os("CARGO_MANIFEST_DIR")
+        .map(PathBuf::from)
+        .expect("could not retrieve root dir");
     let host = match std::env::consts::OS {
         p @ "linux" => p,
         p @ "macos" => p,
         p => panic!("{} platform not supported", p),
     };
 
-    let base_path = root.join("vendor").join(host).join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
+    let base_path = root
+        .join("vendor")
+        .join(host)
+        .join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
 
     WasiSdk {
         cxx: base_path.join("bin").join("clang"),
         sysroot: base_path.join("share").join("wasi-sysroot"),
         ar: base_path.join("bin").join("ar"),
         search_paths: vec![
-            base_path.join("share").join("wasi-sysroot").join("lib").join("wasm32-wasi"),
-            base_path.join("lib").join("clang").join("11.0.0").join("lib").join("wasi")
-        ]
+            base_path
+                .join("share")
+                .join("wasi-sysroot")
+                .join("lib")
+                .join("wasm32-wasi"),
+            base_path
+                .join("lib")
+                .join("clang")
+                .join("11.0.0")
+                .join("lib")
+                .join("wasi"),
+        ],
     }
 }
