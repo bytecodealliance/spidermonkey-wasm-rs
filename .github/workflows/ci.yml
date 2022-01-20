@@ -57,5 +57,5 @@ jobs:
         run: make test
 
       - name: Lint
-        run: make fmt
+        run: make fmt-check
  
