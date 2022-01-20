@@ -4,27 +4,28 @@ mod integration {
 
     #[test]
     fn eval() {
-        let global_class = jsffi::getDefaultGlobalClass();
+        let global_class = jsffi::MakeDefaultGlobalClass();
         assert!(jsffi::JS_Init());
 
         unsafe {
             let context = jsffi::JS_NewContext(32 * 32 * 1024, ptr::null_mut());
             assert!(!context.is_null());
             assert!(jsffi::InitDefaultSelfHostedCode(context));
-            let realm_opts = jsffi::makeDefaultRealmOptions();
+
+            let realm_opts = jsffi::MakeDefaultRealmOptions();
             let global_object = jsgc::Rooted::new(
                 context,
                 jsffi::JS_NewGlobalObject(
                     context,
-                    global_class.into_raw(),
+                    &*global_class,
                     ptr::null_mut(),
                     jsffi::OnNewGlobalHookOption::FireOnNewGlobalHook,
-                    &*realm_opts,
+                    &realm_opts,
                 ),
             );
 
             let _ar = jsrealm::JSAutoRealm::new(context, global_object.ptr);
-            let owning_compile_options = jsffi::NewOwningCompileOptions(
+            let owning_compile_options = jsffi::MakeOwningCompileOptions(
                 context,
                 &jsffi::CompileOptionsParams {
                     force_full_parse: false,
@@ -39,16 +40,13 @@ mod integration {
             };
 
             let script = "41 + 1";
-            let mut source = jsffi::Utf8UnitSourceText {
-                units_: script.as_ptr() as *const _,
-                length_: script.len() as u32,
-                ownsUnits_: false,
-            };
+            let mut source = jsffi::MakeUtf8UnitSourceText();
+            assert!(jsffi::InitUtf8UnitSourceText(context, source.pin_mut(), &script, script.len(), jsffi::SourceOwnership::Borrowed));
 
             jsffi::Utf8SourceEvaluate(
                 context,
                 &owning_compile_options,
-                std::pin::Pin::new(&mut source),
+                source.pin_mut(),
                 rval,
             );
 
