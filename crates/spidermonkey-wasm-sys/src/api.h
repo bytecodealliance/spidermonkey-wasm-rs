@@ -48,5 +48,8 @@ typedef JS::SourceText<char16_t> U16SourceText;
 std::unique_ptr<JSClass> getDefaultGlobalClass();
 std::unique_ptr<JS::OwningCompileOptions> NewOwningCompileOptions(JSContext* context, const CompileOptionsParams &opts);
 JS::RealmOptions* makeDefaultRealmOptions();
+std::unique_ptr<Utf8UnitSourceText> MakeUtf8UnitSourceText();
+
 bool InitDefaultSelfHostedCode(JSContext* context);
-bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src, JS::MutableHandle<JS::Value> rval);
+bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src, JS::MutableHandle<JS::Value> rval);bool InitUtf8UnitSourceText(JSContext* context, Utf8UnitSourceText& src, rust::Str units, size_t length, JS::SourceOwnership ownership);
+bool InitUtf8UnitSourceText(JSContext* context, Utf8UnitSourceText& src, rust::Str units, size_t length, JS::SourceOwnership ownership);
