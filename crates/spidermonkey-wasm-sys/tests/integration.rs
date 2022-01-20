@@ -41,14 +41,15 @@ mod integration {
 
             let script = "41 + 1";
             let mut source = jsffi::MakeUtf8UnitSourceText();
-            assert!(jsffi::InitUtf8UnitSourceText(context, source.pin_mut(), &script, script.len(), jsffi::SourceOwnership::Borrowed));
-
-            jsffi::Utf8SourceEvaluate(
+            assert!(jsffi::InitUtf8UnitSourceText(
                 context,
-                &owning_compile_options,
                 source.pin_mut(),
-                rval,
-            );
+                &script,
+                script.len(),
+                jsffi::SourceOwnership::Borrowed
+            ));
+
+            jsffi::Utf8SourceEvaluate(context, &owning_compile_options, source.pin_mut(), rval);
 
             let result = undefined_value.toInt32();
             assert_eq!(result, 42);

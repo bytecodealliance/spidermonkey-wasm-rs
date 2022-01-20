@@ -101,7 +101,7 @@ pub mod jsffi {
         fn toInt32(self: &Value) -> i32;
 
         unsafe fn MakeUtf8UnitSourceText() -> UniquePtr<Utf8UnitSourceText>;
-        
+
         unsafe fn InitUtf8UnitSourceText(
             context: *mut JSContext,
             src: Pin<&mut Utf8UnitSourceText>,
