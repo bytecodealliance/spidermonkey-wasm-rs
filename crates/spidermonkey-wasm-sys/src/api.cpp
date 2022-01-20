@@ -25,8 +25,9 @@ std::unique_ptr<JS::OwningCompileOptions> MakeOwningCompileOptions(JSContext* co
 
   auto owningOpts = std::make_unique<JS::OwningCompileOptions>(context);
 
-  // TODO: Handle the case where `copy` returns `false`
-  owningOpts->copy(context, jsOpts);
+  if (!owningOpts->copy(context, jsOpts)) {
+    owningOpts.reset(nullptr);
+  }
 
   return owningOpts;
 }
