@@ -2,7 +2,6 @@ extern crate link_cplusplus;
 
 pub mod jsgc;
 pub mod jsrealm;
-pub mod jssourcetext;
 pub mod jsval;
 
 #[cxx::bridge]
@@ -14,6 +13,13 @@ pub mod jsffi {
     enum OnNewGlobalHookOption {
         FireOnNewGlobalHook = 0,
         DontFireOnNewGlobalHook = 1,
+    }
+
+    #[repr(u32)]
+    #[namespace = "JS"]
+    enum SourceOwnership {
+        Borrowed = 0,
+        TakeOwnership = 1,
     }
 
     struct CompileOptionsParams {
@@ -32,8 +38,7 @@ pub mod jsffi {
         type JSClass;
         type JSPrincipals;
         type RootingContext = crate::jsgc::RootingContext;
-        type Utf8UnitSourceText = crate::jssourcetext::SourceText<u8>;
-        type U16SourceText = crate::jssourcetext::SourceText<u16>;
+        type Utf8UnitSourceText;
 
         #[namespace = "JS"]
         type SourceOwnership;
@@ -66,22 +71,23 @@ pub mod jsffi {
         #[namespace = "JS"]
         type ReadOnlyCompileOptions;
 
+        unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
         fn JS_Init() -> bool;
-        fn getDefaultGlobalClass() -> UniquePtr<JSClass>;
-        fn makeDefaultRealmOptions() -> *mut RealmOptions;
 
-        unsafe fn InitDefaultSelfHostedCode(context: *mut JSContext) -> bool;
-        unsafe fn NewOwningCompileOptions(
+        fn MakeDefaultGlobalClass() -> UniquePtr<JSClass>;
+        fn MakeDefaultRealmOptions() -> UniquePtr<RealmOptions>;
+        unsafe fn MakeOwningCompileOptions(
             context: *mut JSContext,
             opts: &CompileOptionsParams,
         ) -> UniquePtr<OwningCompileOptions>;
-        unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
+
+        unsafe fn InitDefaultSelfHostedCode(context: *mut JSContext) -> bool;
+
         unsafe fn JS_NewGlobalObject(
             context: *mut JSContext,
             klass: *const JSClass,
             principals: *mut JSPrincipals,
             hook: OnNewGlobalHookOption,
-            // TODO: verify this signature
             realm_opts: &RealmOptions,
         ) -> *mut JSObject;
 
@@ -93,6 +99,16 @@ pub mod jsffi {
         #[namespace = "JS"]
         fn UndefinedValue() -> Value;
         fn toInt32(self: &Value) -> i32;
+
+        unsafe fn MakeUtf8UnitSourceText() -> UniquePtr<Utf8UnitSourceText>;
+        
+        unsafe fn InitUtf8UnitSourceText(
+            context: *mut JSContext,
+            src: Pin<&mut Utf8UnitSourceText>,
+            units: &str,
+            length: usize,
+            ownership: SourceOwnership,
+        ) -> bool;
 
         unsafe fn Utf8SourceEvaluate(
             context: *mut JSContext,
