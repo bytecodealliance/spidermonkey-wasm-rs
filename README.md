@@ -5,6 +5,7 @@
   <p>
     <strong>Experimental Rust bindings and generic builtins for SpiderMonkey for the <code>wasm32-wasi</code> target</strong>
   </p>
+  <a href="https://github.com/bytecodealliance/spidermonkey-wasm-rs/actions?query=workflow%3ACI"><img src="https://github.com/bytecodealliance/spidermonkey-wasm-rs/workflows/CI/badge.svg" alt="build status" /></a>
 </div>
 
 ## Requirements
