@@ -1,5 +1,6 @@
 mod integration {
     use spidermonkey_wasm_sys::{jsffi, jsgc, jsrealm};
+    use std::marker::PhantomData;
     use std::ptr;
 
     #[test]
@@ -37,6 +38,7 @@ mod integration {
             let mut undefined_value = jsffi::UndefinedValue();
             let rval = jsgc::MutableHandle {
                 ptr: &mut undefined_value,
+                _marker: PhantomData,
             };
 
             let script = "41 + 1";
