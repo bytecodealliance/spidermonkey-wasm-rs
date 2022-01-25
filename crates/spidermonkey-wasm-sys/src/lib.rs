@@ -4,6 +4,40 @@ pub mod jsgc;
 pub mod jsrealm;
 pub mod jsval;
 
+use cxx::{type_id, ExternType};
+
+macro_rules! impl_extern_type {
+    ($type:ty, $id:expr, $kind:ty) => {
+        unsafe impl ExternType for $type {
+            type Id = type_id!($id);
+            type Kind = $kind;
+        }
+    };
+}
+
+impl_extern_type!(jsffi::RootingContext, "RootingContext", cxx::kind::Opaque);
+impl_extern_type!(jsffi::RootKind, "JS::RootKind", cxx::kind::Trivial);
+impl_extern_type!(jsffi::Value, "JS::Value", cxx::kind::Trivial);
+
+impl_extern_type!(jsffi::RootedObject, "JS::RootedObject", cxx::kind::Opaque);
+impl_extern_type!(jsffi::RootedValue, "JS::RootedValue", cxx::kind::Opaque);
+impl_extern_type!(jsffi::RootedString, "JS::RootedString", cxx::kind::Opaque);
+impl_extern_type!(jsffi::RootedScript, "JS::RootedScript", cxx::kind::Opaque);
+
+impl_extern_type!(jsffi::HandleValue, "JS::HandleValue", cxx::kind::Trivial);
+impl_extern_type!(jsffi::HandleObject, "JS::HandleObject", cxx::kind::Opaque);
+
+impl_extern_type!(
+    jsffi::MutableHandleObject,
+    "JS::MutableHandleObject",
+    cxx::kind::Opaque
+);
+impl_extern_type!(
+    jsffi::MutableHandleValue,
+    "JS::MutableHandleValue",
+    cxx::kind::Trivial
+);
+
 #[cxx::bridge]
 pub mod jsffi {
 
@@ -36,9 +70,11 @@ pub mod jsffi {
         type JSRuntime;
         type JSContext;
         type JSClass;
+        type JSScript;
         type JSPrincipals;
         type RootingContext = crate::jsgc::RootingContext;
         type Utf8UnitSourceText;
+        type JSString;
 
         #[namespace = "JS"]
         type SourceOwnership;
@@ -47,7 +83,15 @@ pub mod jsffi {
         #[namespace = "JS"]
         type RootedObject = crate::jsgc::Rooted<*const JSObject>;
         #[namespace = "JS"]
+        type RootedValue = crate::jsgc::Rooted<Value>;
+        #[namespace = "JS"]
+        type RootedString = crate::jsgc::Rooted<*mut JSString>;
+        #[namespace = "JS"]
+        type RootedScript = crate::jsgc::Rooted<*mut JSScript>;
+        #[namespace = "JS"]
         type HandleObject = crate::jsgc::Handle<*const JSObject>;
+        #[namespace = "JS"]
+        type HandleValue = crate::jsgc::Handle<Value>;
         #[namespace = "JS"]
         type MutableHandleObject = crate::jsgc::MutableHandle<*const JSObject>;
         #[namespace = "JS"]

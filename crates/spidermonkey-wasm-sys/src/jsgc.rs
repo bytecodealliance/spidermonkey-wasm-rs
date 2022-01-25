@@ -1,17 +1,11 @@
 use crate::jsffi::{
-    AutoRooterListHeads, GeckoProfilerThread, HandleObject, JSContext, JSObject,
-    MutableHandleObject, MutableHandleValue, Realm, RootedObject, Value, Zone,
+    AutoRooterListHeads, GeckoProfilerThread, JSContext, JSObject, JSScript, JSString, Realm,
+    Value, Zone,
 };
-use cxx::{type_id, ExternType};
 use std::{cell::UnsafeCell, marker::PhantomData};
 use std::{ffi::c_void, ptr};
 
 // -- ROOTING
-
-unsafe impl ExternType for RootingContext {
-    type Id = type_id!("RootingContext");
-    type Kind = cxx::kind::Opaque;
-}
 
 #[allow(non_snake_case)]
 #[repr(C)]
@@ -23,11 +17,6 @@ pub struct RootingContext {
     pub zone_: *mut Zone,
     pub nativeStackLimit: [usize; 3usize],
     pub wasiRecursionDepth: u32,
-}
-
-unsafe impl ExternType for RootedObject {
-    type Id = type_id!("JS::RootedObject");
-    type Kind = cxx::kind::Opaque;
 }
 
 #[repr(C)]
@@ -89,11 +78,6 @@ impl<T> Drop for Rooted<T> {
     }
 }
 
-unsafe impl ExternType for RootKind {
-    type Id = type_id!("JS::RootKind");
-    type Kind = cxx::kind::Trivial;
-}
-
 #[repr(i8)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum RootKind {
@@ -131,27 +115,29 @@ impl JSRootKind for Value {
     }
 }
 
+impl JSRootKind for *mut JSString {
+    fn root_kind() -> RootKind {
+        RootKind::String
+    }
+}
+
+impl JSRootKind for *mut JSScript {
+    fn root_kind() -> RootKind {
+        RootKind::Script
+    }
+}
+
 // HANDLE
 
-unsafe impl ExternType for HandleObject {
-    type Id = type_id!("JS::HandleObject");
-    type Kind = cxx::kind::Opaque;
-}
-
-unsafe impl ExternType for MutableHandleObject {
-    type Id = type_id!("JS::MutableHandleObject");
-    type Kind = cxx::kind::Opaque;
-}
-
-unsafe impl ExternType for MutableHandleValue {
-    type Id = type_id!("JS::MutableHandleValue");
-    type Kind = cxx::kind::Trivial;
-}
+#[repr(C)]
+#[derive(Debug)]
 pub struct Handle<T> {
     pub ptr: *const T,
     pub _marker: PhantomData<UnsafeCell<T>>,
 }
 
+#[repr(C)]
+#[derive(Debug)]
 pub struct MutableHandle<T> {
     pub ptr: *mut T,
     pub _marker: PhantomData<UnsafeCell<T>>,
