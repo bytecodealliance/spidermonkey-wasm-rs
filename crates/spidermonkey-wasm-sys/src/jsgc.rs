@@ -3,6 +3,7 @@ use crate::jsffi::{
     MutableHandleObject, MutableHandleValue, Realm, RootedObject, Value, Zone,
 };
 use cxx::{type_id, ExternType};
+use std::{cell::UnsafeCell, marker::PhantomData};
 use std::{ffi::c_void, ptr};
 
 // -- ROOTING
@@ -148,7 +149,10 @@ unsafe impl ExternType for MutableHandleValue {
 }
 pub struct Handle<T> {
     pub ptr: *const T,
+    pub _marker: PhantomData<UnsafeCell<T>>,
 }
+
 pub struct MutableHandle<T> {
     pub ptr: *mut T,
+    pub _marker: PhantomData<UnsafeCell<T>>,
 }
