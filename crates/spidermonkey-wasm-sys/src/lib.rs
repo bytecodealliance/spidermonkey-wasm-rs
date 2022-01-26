@@ -134,6 +134,7 @@ pub mod jsffi {
 
         unsafe fn InitDefaultSelfHostedCode(context: *mut JSContext) -> bool;
 
+        unsafe fn JS_NewPlainObject(context: *mut JSContext) -> *mut JSObject;
         unsafe fn JS_NewGlobalObject(
             context: *mut JSContext,
             klass: *const JSClass,
@@ -152,7 +153,6 @@ pub mod jsffi {
         fn toInt32(self: &Value) -> i32;
 
         unsafe fn MakeUtf8UnitSourceText() -> UniquePtr<Utf8UnitSourceText>;
-
         unsafe fn InitUtf8UnitSourceText(
             context: *mut JSContext,
             src: Pin<&mut Utf8UnitSourceText>,
@@ -160,7 +160,6 @@ pub mod jsffi {
             length: usize,
             ownership: SourceOwnership,
         ) -> bool;
-
         unsafe fn Utf8SourceEvaluate(
             context: *mut JSContext,
             compile_opts: &OwningCompileOptions,
