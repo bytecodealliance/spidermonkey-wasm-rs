@@ -81,6 +81,8 @@ pub mod jsffi {
         #[namespace = "JS"]
         type Value = crate::jsval::Value;
         #[namespace = "JS"]
+        type PersistentRootedObject;
+        #[namespace = "JS"]
         type RootedObject = crate::jsgc::Rooted<*mut JSObject>;
         #[namespace = "JS"]
         type RootedValue = crate::jsgc::Rooted<Value>;
@@ -160,5 +162,13 @@ pub mod jsffi {
             source: Pin<&mut Utf8UnitSourceText>,
             rval: MutableHandleValue,
         ) -> bool;
+
+        fn MakeUninitPersistentRootedObject() -> UniquePtr<PersistentRootedObject>;
+        unsafe fn InitPersistentRootedObject(
+            root: Pin<&mut PersistentRootedObject>,
+            context: *mut JSContext,
+            initial: *mut JSObject,
+        );
+        fn initialized(self: &PersistentRootedObject) -> bool;
     }
 }
