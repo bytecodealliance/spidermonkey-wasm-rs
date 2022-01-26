@@ -44,6 +44,8 @@ struct CompileOptionsParams;
 
 typedef JS::SourceText<mozilla::Utf8Unit> Utf8UnitSourceText;
 
+uint32_t DefaultHeapMaxBytes();
+
 std::unique_ptr<JSClass> MakeDefaultGlobalClass();
 std::unique_ptr<JS::RealmOptions> MakeDefaultRealmOptions();
 std::unique_ptr<JS::OwningCompileOptions> MakeOwningCompileOptions(JSContext* context, const CompileOptionsParams &opts);

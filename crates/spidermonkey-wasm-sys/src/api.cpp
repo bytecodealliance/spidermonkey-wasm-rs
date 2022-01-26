@@ -56,3 +56,6 @@ void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* cont
   obj.init(context, initial);
 }
 
+uint32_t DefaultHeapMaxBytes() {
+  return JS::DefaultHeapMaxBytes;
+}

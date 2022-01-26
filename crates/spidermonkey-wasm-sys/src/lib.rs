@@ -118,6 +118,7 @@ pub mod jsffi {
         type ReadOnlyCompileOptions;
 
         unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
+        fn DefaultHeapMaxBytes() -> u32;
         fn JS_Init() -> bool;
 
         fn MakeDefaultGlobalClass() -> UniquePtr<JSClass>;
