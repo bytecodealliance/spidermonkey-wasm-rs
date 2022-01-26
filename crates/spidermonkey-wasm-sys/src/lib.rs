@@ -124,7 +124,6 @@ pub mod jsffi {
         fn JS_Init() -> bool;
         fn JS_ShutDown();
 
-
         fn MakeDefaultGlobalClass() -> UniquePtr<JSClass>;
         fn MakeDefaultRealmOptions() -> UniquePtr<RealmOptions>;
         unsafe fn MakeOwningCompileOptions(

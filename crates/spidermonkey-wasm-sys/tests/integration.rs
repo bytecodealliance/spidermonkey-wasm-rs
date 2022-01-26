@@ -81,7 +81,11 @@ mod integration {
         let mut persistent = jsffi::MakeUninitPersistentRootedObject();
         assert!(!persistent.initialized());
         unsafe {
-            jsffi::InitPersistentRootedObject(persistent.pin_mut(), context, JS_NewPlainObject(context));
+            jsffi::InitPersistentRootedObject(
+                persistent.pin_mut(),
+                context,
+                JS_NewPlainObject(context),
+            );
         }
         assert!(persistent.initialized());
         shutdown_engine(context);
