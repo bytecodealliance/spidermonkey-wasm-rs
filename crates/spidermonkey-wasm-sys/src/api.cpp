@@ -48,3 +48,14 @@ bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts
   return JS::Evaluate(context, opts, src, rval);
 }
 
+std::unique_ptr<JS::PersistentRootedObject> MakeUninitPersistentRootedObject() {
+  return std::make_unique<JS::PersistentRootedObject>();
+}
+
+void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* context, JSObject* initial) {
+  obj.init(context, initial);
+}
+
+uint32_t DefaultHeapMaxBytes() {
+  return JS::DefaultHeapMaxBytes;
+}

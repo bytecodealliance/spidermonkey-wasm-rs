@@ -44,6 +44,8 @@ struct CompileOptionsParams;
 
 typedef JS::SourceText<mozilla::Utf8Unit> Utf8UnitSourceText;
 
+uint32_t DefaultHeapMaxBytes();
+
 std::unique_ptr<JSClass> MakeDefaultGlobalClass();
 std::unique_ptr<JS::RealmOptions> MakeDefaultRealmOptions();
 std::unique_ptr<JS::OwningCompileOptions> MakeOwningCompileOptions(JSContext* context, const CompileOptionsParams &opts);
@@ -52,3 +54,7 @@ std::unique_ptr<Utf8UnitSourceText> MakeUtf8UnitSourceText();
 bool InitDefaultSelfHostedCode(JSContext* context);
 bool InitUtf8UnitSourceText(JSContext* context, Utf8UnitSourceText& src, rust::Str units, size_t length, JS::SourceOwnership ownership);
 bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src, JS::MutableHandle<JS::Value> rval);
+
+std::unique_ptr<JS::PersistentRootedObject> MakeUninitPersistentRootedObject();
+void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* context, JSObject* initial);
+

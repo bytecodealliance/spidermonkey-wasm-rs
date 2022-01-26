@@ -1,16 +1,31 @@
 mod integration {
+    use spidermonkey_wasm_sys::jsffi::JS_NewPlainObject;
     use spidermonkey_wasm_sys::{jsffi, jsgc, jsrealm};
     use std::marker::PhantomData;
     use std::ptr;
 
+    fn init_engine() -> *mut jsffi::JSContext {
+        assert!(jsffi::JS_Init());
+        unsafe {
+            let context = jsffi::JS_NewContext(jsffi::DefaultHeapMaxBytes(), ptr::null_mut());
+            assert!(!context.is_null());
+            context
+        }
+    }
+
+    fn shutdown_engine(context: *mut jsffi::JSContext) {
+        unsafe {
+            jsffi::JS_DestroyContext(context);
+        }
+        jsffi::JS_ShutDown();
+    }
+
     #[test]
     fn eval() {
         let global_class = jsffi::MakeDefaultGlobalClass();
-        assert!(jsffi::JS_Init());
+        let context = init_engine();
 
         unsafe {
-            let context = jsffi::JS_NewContext(32 * 32 * 1024, ptr::null_mut());
-            assert!(!context.is_null());
             assert!(jsffi::InitDefaultSelfHostedCode(context));
 
             let realm_opts = jsffi::MakeDefaultRealmOptions();
@@ -56,5 +71,23 @@ mod integration {
             let result = undefined_value.toInt32();
             assert_eq!(result, 42);
         }
+
+        shutdown_engine(context);
+    }
+
+    #[test]
+    fn init_persistent_rooted() {
+        let context = init_engine();
+        let mut persistent = jsffi::MakeUninitPersistentRootedObject();
+        assert!(!persistent.initialized());
+        unsafe {
+            jsffi::InitPersistentRootedObject(
+                persistent.pin_mut(),
+                context,
+                JS_NewPlainObject(context),
+            );
+        }
+        assert!(persistent.initialized());
+        shutdown_engine(context);
     }
 }

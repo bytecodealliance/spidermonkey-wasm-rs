@@ -81,6 +81,8 @@ pub mod jsffi {
         #[namespace = "JS"]
         type Value = crate::jsval::Value;
         #[namespace = "JS"]
+        type PersistentRootedObject;
+        #[namespace = "JS"]
         type RootedObject = crate::jsgc::Rooted<*mut JSObject>;
         #[namespace = "JS"]
         type RootedValue = crate::jsgc::Rooted<Value>;
@@ -116,7 +118,11 @@ pub mod jsffi {
         type ReadOnlyCompileOptions;
 
         unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
+        unsafe fn JS_DestroyContext(context: *mut JSContext);
+        fn DefaultHeapMaxBytes() -> u32;
+
         fn JS_Init() -> bool;
+        fn JS_ShutDown();
 
         fn MakeDefaultGlobalClass() -> UniquePtr<JSClass>;
         fn MakeDefaultRealmOptions() -> UniquePtr<RealmOptions>;
@@ -127,6 +133,7 @@ pub mod jsffi {
 
         unsafe fn InitDefaultSelfHostedCode(context: *mut JSContext) -> bool;
 
+        unsafe fn JS_NewPlainObject(context: *mut JSContext) -> *mut JSObject;
         unsafe fn JS_NewGlobalObject(
             context: *mut JSContext,
             klass: *const JSClass,
@@ -145,7 +152,6 @@ pub mod jsffi {
         fn toInt32(self: &Value) -> i32;
 
         unsafe fn MakeUtf8UnitSourceText() -> UniquePtr<Utf8UnitSourceText>;
-
         unsafe fn InitUtf8UnitSourceText(
             context: *mut JSContext,
             src: Pin<&mut Utf8UnitSourceText>,
@@ -153,12 +159,19 @@ pub mod jsffi {
             length: usize,
             ownership: SourceOwnership,
         ) -> bool;
-
         unsafe fn Utf8SourceEvaluate(
             context: *mut JSContext,
             compile_opts: &OwningCompileOptions,
             source: Pin<&mut Utf8UnitSourceText>,
             rval: MutableHandleValue,
         ) -> bool;
+
+        fn MakeUninitPersistentRootedObject() -> UniquePtr<PersistentRootedObject>;
+        unsafe fn InitPersistentRootedObject(
+            root: Pin<&mut PersistentRootedObject>,
+            context: *mut JSContext,
+            initial: *mut JSObject,
+        );
+        fn initialized(self: &PersistentRootedObject) -> bool;
     }
 }
