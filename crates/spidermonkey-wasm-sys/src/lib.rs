@@ -81,7 +81,7 @@ pub mod jsffi {
         #[namespace = "JS"]
         type Value = crate::jsval::Value;
         #[namespace = "JS"]
-        type RootedObject = crate::jsgc::Rooted<*const JSObject>;
+        type RootedObject = crate::jsgc::Rooted<*mut JSObject>;
         #[namespace = "JS"]
         type RootedValue = crate::jsgc::Rooted<Value>;
         #[namespace = "JS"]
@@ -89,11 +89,11 @@ pub mod jsffi {
         #[namespace = "JS"]
         type RootedScript = crate::jsgc::Rooted<*mut JSScript>;
         #[namespace = "JS"]
-        type HandleObject = crate::jsgc::Handle<*const JSObject>;
+        type HandleObject = crate::jsgc::Handle<*mut JSObject>;
         #[namespace = "JS"]
         type HandleValue = crate::jsgc::Handle<Value>;
         #[namespace = "JS"]
-        type MutableHandleObject = crate::jsgc::MutableHandle<*const JSObject>;
+        type MutableHandleObject = crate::jsgc::MutableHandle<*mut JSObject>;
         #[namespace = "JS"]
         type MutableHandleValue = crate::jsgc::MutableHandle<Value>;
         #[namespace = "JS"]
