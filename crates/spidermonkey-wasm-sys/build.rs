@@ -1,14 +1,25 @@
+use anyhow::Result;
 use cxx_build::bridge as cxxbridge;
 use fs_extra::dir;
 use std::{
     env,
+    fs::File,
+    io::{self, Cursor},
     path::{Path, PathBuf},
 };
 use walkdir::WalkDir;
 
-static SPIDERMONKEY_BUILD_DIR: &str = "spidermonkey-wasm-build";
-const WASI_SDK_VERSION: &str = "12.0";
+const SPIDERMONKEY_BUILD_DIR: &str = "spidermonkey-wasm-build";
+const WASI_SDK_VERSION: &str = "12";
+const SPIDERMONEY_BUILD_URL_BASE: &str =
+    "https://github.com/bytecodealliance/spidermonkey-wasm-build/releases/download/";
+const SPIDERMONKEY_COMMIT: &str = "c2562b0917ebeca61a79b123eddb340be74af702";
+const SPIDERMONKEY_ASSET: &str = "spidermonkey-wasm.tar.gz";
+const WASI_SDK_URL_BASE: &str =
+    "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-";
+const WASI_SDK_DIR: &str = "vendor";
 
+#[derive(Debug)]
 struct WasiSdk {
     cxx: PathBuf,
     sysroot: PathBuf,
@@ -17,6 +28,11 @@ struct WasiSdk {
 }
 
 fn main() {
+    prepare();
+    build();
+}
+
+fn build() {
     let sdk = derive_wasi_sdk();
 
     let out_dir = env::var_os("OUT_DIR")
@@ -69,6 +85,10 @@ fn main() {
 
 fn bridge(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
     let mut builder = cxxbridge("src/lib.rs");
+    println!("WASI SDK: {:?}", wasi_sdk);
+    println!("LIB DIR: {:?}", lib_dir.as_ref());
+    println!("INCLUDE_DIR {:?}", include_dir.as_ref());
+
     builder
         .cpp(true)
         .cpp_link_stdlib("c++")
@@ -114,16 +134,12 @@ fn derive_wasi_sdk() -> WasiSdk {
     let root = env::var_os("CARGO_MANIFEST_DIR")
         .map(PathBuf::from)
         .expect("could not retrieve root dir");
-    let host = match std::env::consts::OS {
-        p @ "linux" => p,
-        p @ "macos" => p,
-        p => panic!("{} platform not supported", p),
-    };
 
     let base_path = root
-        .join("vendor")
-        .join(host)
-        .join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
+        .join(WASI_SDK_DIR)
+        .join(host())
+        .join(format!("wasi-sdk-{}.0", WASI_SDK_VERSION));
+    println!("BASE PATH: {:?}", base_path);
 
     WasiSdk {
         cxx: base_path.join("bin").join("clang"),
@@ -143,4 +159,72 @@ fn derive_wasi_sdk() -> WasiSdk {
                 .join("wasi"),
         ],
     }
+}
+
+fn prepare() {
+    // download and extract the SpiderMonkey build
+    let sm_url = format!(
+        "{}/rev-{}/{}",
+        SPIDERMONEY_BUILD_URL_BASE, SPIDERMONKEY_COMMIT, SPIDERMONKEY_ASSET
+    );
+    let sm_archive = format!("{}-{}", SPIDERMONKEY_COMMIT, SPIDERMONKEY_ASSET);
+    download(&sm_url, &sm_archive).unwrap();
+    extract(sm_archive.as_str(), SPIDERMONKEY_BUILD_DIR).unwrap();
+
+    // download and extract the WASI SDK for the current operating system (Linux or macOS)
+    let wasi_sdk_url = format!(
+        "{}{}/wasi-sdk-{}.0-{}.tar.gz",
+        WASI_SDK_URL_BASE,
+        WASI_SDK_VERSION,
+        WASI_SDK_VERSION,
+        host()
+    );
+
+    let wasi_sdk_archive = format!("wasi-sdk-{}-{}.tar.gz", WASI_SDK_VERSION, host());
+    download(&wasi_sdk_url, &wasi_sdk_archive).unwrap();
+    extract(
+        wasi_sdk_archive.as_str(),
+        &format!("{}/{}", WASI_SDK_DIR, host()),
+    )
+    .unwrap();
+}
+
+fn host() -> &'static str {
+    match std::env::consts::OS {
+        p @ "linux" => p,
+        p @ "macos" => p,
+        p => panic!("{} platform not supported", p),
+    }
+}
+
+fn download<P>(url: &str, dst: P) -> Result<()>
+where
+    P: AsRef<Path>,
+{
+    if Path::new(dst.as_ref()).exists() {
+        return Ok(());
+    }
+
+    let res = reqwest::blocking::get(url)?;
+    let mut file = File::create(dst)?;
+    let mut bytes = Cursor::new(res.bytes()?);
+    io::copy(&mut bytes, &mut file)?;
+
+    Ok(())
+}
+
+fn extract<P>(src: P, dst: P) -> Result<()>
+where
+    P: AsRef<Path>,
+{
+    if Path::new(dst.as_ref()).exists() {
+        return Ok(());
+    }
+
+    let tar_gz = File::open(src)?;
+    let tar = flate2::read::GzDecoder::new(tar_gz);
+    let mut archive = tar::Archive::new(tar);
+    archive.unpack(dst)?;
+
+    Ok(())
 }

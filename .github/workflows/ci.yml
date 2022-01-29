@@ -12,14 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      
-      - name: Download SpiderMonkey build artifacts
-        run: |
-          cd crates/spidermonkey-wasm-sys/spidermonkey-wasm-build/
-          ./download.sh
-          cd -
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1

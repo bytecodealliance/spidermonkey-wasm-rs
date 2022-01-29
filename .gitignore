@@ -1,3 +1,6 @@
 /target
 Cargo.lock
 .DS_Store
+*.tar.gz
+spidermonkey-wasm-build
+vendor

@@ -1,3 +1,0 @@
-[submodule "crates/spidermonkey-wasm-sys/spidermonkey-wasm-build"]
-	path = crates/spidermonkey-wasm-sys/spidermonkey-wasm-build
-	url = https://github.com/bytecodealliance/spidermonkey-wasm-build
