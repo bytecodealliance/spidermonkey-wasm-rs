@@ -1,10 +1,4 @@
 use crate::jsffi::{self, EnterRealm, JSContext, JSObject, LeaveRealm};
-use cxx::{kind, type_id, ExternType};
-
-unsafe impl ExternType for JSAutoRealm {
-    type Id = type_id!("JSAutoRealm");
-    type Kind = kind::Opaque;
-}
 
 #[repr(C)]
 #[derive(Debug)]
