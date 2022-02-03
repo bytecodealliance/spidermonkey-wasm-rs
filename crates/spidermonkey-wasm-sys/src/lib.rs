@@ -15,6 +15,7 @@ macro_rules! impl_extern_type {
     };
 }
 
+impl_extern_type!(jsffi::JSAutoRealm, "JSAutoRealm", cxx::kind::Opaque);
 impl_extern_type!(jsffi::RootingContext, "RootingContext", cxx::kind::Opaque);
 impl_extern_type!(jsffi::RootKind, "JS::RootKind", cxx::kind::Trivial);
 impl_extern_type!(jsffi::Value, "JS::Value", cxx::kind::Trivial);
