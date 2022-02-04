@@ -126,7 +126,7 @@ fn derive_wasi_sdk() -> WasiSdk {
         .join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
 
     WasiSdk {
-        cxx: base_path.join("bin").join("clang"),
+        cxx: base_path.join("bin").join("clang++"),
         sysroot: base_path.join("share").join("wasi-sysroot"),
         ar: base_path.join("bin").join("ar"),
         search_paths: vec![
