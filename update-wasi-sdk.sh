@@ -18,12 +18,12 @@ fi
 asset=$qualified_name
 unamestr=$(uname)
 
-if [[ "$unamestr" == "Linux" ]]; then
+if [[ $unamestr == "Linux" ]]; then
   asset=$asset-linux.tar.gz
-elif [[ "$unamestr" == "Darwin" ]]; then
+elif [[ $unamestr == "Darwin" ]]; then
   asset=$asset-macos.tar.gz
 else
-  echo "Unsupoorted platform $unnamestr";
+  echo "Unsupported platform $unamestr";
   exit 1;
 fi
 
