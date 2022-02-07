@@ -56,8 +56,11 @@ jobs:
       - name: Install cargo-wasi
         run: cargo install cargo-wasi
 
-      - name: Tests
-        run: cargo wasi test --package=spidermonkey-wasm-sys
+      - name: Test sys
+        run: |
+          cd crates/spidermonkey-wasm-sys
+          cargo wasi test
+          cd -
 
       - name: Lint
         run: cargo fmt -- --check
