@@ -1,2 +1,9 @@
 [build]
 target = "wasm32-wasi"
+
+[env]
+CXX = "/opt/wasi-sdk/wasi-sdk-12.0/bin/clang++ --sysroot=/opt/wasi-sdk/wasi-sdk-12.0/share/wasi-sysroot"
+CXXFLAGS = "-fno-exceptions -DRUST_CXX_NO_EXCEPTIONS"
+AR = "/opt/wasi-sdk/wasi-sdk-12.0/bin/ar"
+LIBCLANG_PATH = "/opt/wasi-sdk/wasi-sdk-12.0/share/wasi-sysroot/lib/wasm32-wasi"
+LIBCLANG_RT_PATH = "/opt/wasi-sdk/wasi-sdk-12.0/lib/clang/11.0.0/lib/wasi"

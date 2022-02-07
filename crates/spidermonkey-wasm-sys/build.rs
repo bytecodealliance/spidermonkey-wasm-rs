@@ -7,18 +7,8 @@ use std::{
 use walkdir::WalkDir;
 
 static SPIDERMONKEY_BUILD_DIR: &str = "spidermonkey-wasm-build";
-const WASI_SDK_VERSION: &str = "12.0";
-
-struct WasiSdk {
-    cxx: PathBuf,
-    sysroot: PathBuf,
-    ar: PathBuf,
-    search_paths: Vec<PathBuf>,
-}
 
 fn main() {
-    let sdk = derive_wasi_sdk();
-
     let out_dir = env::var_os("OUT_DIR")
         .map(PathBuf::from)
         .expect("could not find OUT_DIR");
@@ -51,15 +41,17 @@ fn main() {
 
     println!("cargo:rustc-link-search={}", out_lib_dir.display());
 
-    for path in &sdk.search_paths {
-        println!("cargo:rustc-link-search=native={}", path.display());
-    }
+    let libclang_path = env::var("LIBCLANG_PATH").expect("LIBCLANG_PATH to be defined");
+    let libclang_rt_path = env::var("LIBCLANG_RT_PATH").expect("LIBCLANG_RT_PATH to be defined");
+
+    println!("cargo:rustc-link-search=native={}", libclang_path);
+    println!("cargo:rustc-link-search=native={}", libclang_rt_path);
 
     println!("cargo:rustc-link-lib=static=jsrust");
     println!("cargo:rustc-link-lib=static=js_static");
     println!("cargo:rustc-link-lib=static=c++abi");
     println!("cargo:rustc-link-lib=static=clang_rt.builtins-wasm32");
-    bridge(&sdk, &out_lib_dir, &out_include_dir);
+    bridge(&out_lib_dir, &out_include_dir);
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=src/api.h");
@@ -67,13 +59,11 @@ fn main() {
     println!("cargo:rerun-if-changed=src/lib.rs");
 }
 
-fn bridge(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
+fn bridge(lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
     let mut builder = cxxbridge("src/lib.rs");
     builder
         .cpp(true)
         .cpp_link_stdlib("c++")
-        .compiler(&wasi_sdk.cxx)
-        .archiver(&wasi_sdk.ar)
         .file("src/api.cpp")
         .include(include_dir)
         .include("src")
@@ -93,8 +83,7 @@ fn bridge(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef
         .flag_if_supported("-fno-omit-frame-pointer")
         .flag_if_supported("-funwind-tables")
         .flag_if_supported("-Wno-invalid-offsetof")
-        .flag_if_supported("-std=gnu++17")
-        .flag_if_supported(&format!("--sysroot={}", &wasi_sdk.sysroot.display()));
+        .flag_if_supported("-std=gnu++17");
 
     for entry in WalkDir::new(lib_dir)
         .sort_by_file_name()
@@ -108,39 +97,4 @@ fn bridge(wasi_sdk: &WasiSdk, lib_dir: impl AsRef<Path>, include_dir: impl AsRef
     }
 
     builder.opt_level(2).compile("spidermonkey-wasm");
-}
-
-fn derive_wasi_sdk() -> WasiSdk {
-    let root = env::var_os("CARGO_MANIFEST_DIR")
-        .map(PathBuf::from)
-        .expect("could not retrieve root dir");
-    let host = match std::env::consts::OS {
-        p @ "linux" => p,
-        p @ "macos" => p,
-        p => panic!("{} platform not supported", p),
-    };
-
-    let base_path = root
-        .join("vendor")
-        .join(host)
-        .join(format!("wasi-sdk-{}", WASI_SDK_VERSION));
-
-    WasiSdk {
-        cxx: base_path.join("bin").join("clang++"),
-        sysroot: base_path.join("share").join("wasi-sysroot"),
-        ar: base_path.join("bin").join("ar"),
-        search_paths: vec![
-            base_path
-                .join("share")
-                .join("wasi-sysroot")
-                .join("lib")
-                .join("wasm32-wasi"),
-            base_path
-                .join("lib")
-                .join("clang")
-                .join("11.0.0")
-                .join("lib")
-                .join("wasi"),
-        ],
-    }
 }
