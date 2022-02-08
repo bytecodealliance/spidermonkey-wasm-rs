@@ -1,4 +1,5 @@
 [workspace]
 members = [
   "crates/spidermonkey-wasm-sys",
+  "crates/spidermonkey-wasm",
 ]
