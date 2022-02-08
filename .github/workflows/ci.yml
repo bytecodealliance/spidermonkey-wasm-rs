@@ -62,6 +62,12 @@ jobs:
           cargo wasi test
           cd -
 
+      - name: Test spidermonkey-wasm
+        run: |
+          cd crates/spidermonkey-wasm
+          cargo wasi test
+          cd -
+
       - name: Lint
         run: cargo fmt -- --check
  
