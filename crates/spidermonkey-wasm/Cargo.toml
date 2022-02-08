@@ -1,0 +1,7 @@
+[package]
+name = "spidermonkey-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+spidermonkey-wasm-sys = { path = "../spidermonkey-wasm-sys" }

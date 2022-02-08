@@ -118,6 +118,7 @@ pub mod jsffi {
         #[namespace = "JS"]
         type ReadOnlyCompileOptions;
 
+        unsafe fn JS_GetRuntime(context: *mut JSContext) -> *mut JSRuntime;
         unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
         unsafe fn JS_DestroyContext(context: *mut JSContext);
         fn DefaultHeapMaxBytes() -> u32;
