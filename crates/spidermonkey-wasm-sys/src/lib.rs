@@ -134,6 +134,8 @@ pub mod jsffi {
         ) -> UniquePtr<OwningCompileOptions>;
 
         unsafe fn InitDefaultSelfHostedCode(context: *mut JSContext) -> bool;
+        #[namespace = "js"]
+        unsafe fn UseInternalJobQueues(context: *mut JSContext) -> bool;
 
         unsafe fn JS_NewPlainObject(context: *mut JSContext) -> *mut JSObject;
         unsafe fn JS_NewGlobalObject(

@@ -1,6 +1,6 @@
 use spidermonkey_wasm_sys::jsffi::{
-    DefaultHeapMaxBytes, JSContext, JSRuntime, JS_DestroyContext, JS_GetRuntime, JS_Init,
-    JS_NewContext, JS_ShutDown,
+    DefaultHeapMaxBytes, InitDefaultSelfHostedCode, JSContext, JSRuntime, JS_DestroyContext,
+    JS_GetRuntime, JS_Init, JS_NewContext, JS_ShutDown, UseInternalJobQueues,
 };
 use std::ptr;
 
@@ -18,6 +18,11 @@ impl Default for Runtime {
 
         let context: *mut JSContext =
             unsafe { JS_NewContext(DefaultHeapMaxBytes(), ptr::null_mut()) };
+
+        unsafe {
+            assert!(UseInternalJobQueues(context));
+            assert!(InitDefaultSelfHostedCode(context));
+        }
 
         Self { context }
     }
@@ -42,7 +47,9 @@ impl Drop for Runtime {
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
+
     use super::Runtime;
 
     #[test]
