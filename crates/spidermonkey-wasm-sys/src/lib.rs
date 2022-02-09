@@ -39,6 +39,8 @@ impl_extern_type!(
     cxx::kind::Trivial
 );
 
+impl_extern_type!(jsffi::JSGCParamKey, "JSGCParamKey", cxx::kind::Trivial);
+
 #[cxx::bridge]
 pub mod jsffi {
 
