@@ -119,6 +119,10 @@ pub mod jsffi {
         type OwningCompileOptions;
         #[namespace = "JS"]
         type ReadOnlyCompileOptions;
+        #[namespace = "JS"]
+        unsafe fn DisableIncrementalGC(context: *mut JSContext);
+        type JSGCParamKey = crate::jsgc::JSGCParamKey;
+        unsafe fn JS_SetGCParameter(context: *mut JSContext, param_key: JSGCParamKey, value: u32);
 
         unsafe fn JS_GetRuntime(context: *mut JSContext) -> *mut JSRuntime;
         unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;
