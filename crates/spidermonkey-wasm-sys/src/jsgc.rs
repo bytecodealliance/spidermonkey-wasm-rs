@@ -45,7 +45,8 @@ impl<T> Rooted<T> {
         self.ptr = initial;
         let kind = T::root_kind() as usize;
         let rooting_context = context as *mut RootingContext;
-        let stack: *mut *mut Rooted<*mut c_void> = &mut (*rooting_context).stackRoots_[kind] as *mut _ as *mut _;
+        let stack: *mut *mut Rooted<*mut c_void> =
+            &mut (*rooting_context).stackRoots_[kind] as *mut _ as *mut _;
 
         self.stack = stack;
         self.prev = *stack;

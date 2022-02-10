@@ -1,11 +1,12 @@
-use spidermonkey_wasm_sys::{jsgc::{Rooted as RawRooted, JSRootKind}, jsffi::JSContext};
 use crate::handle::{Handle, MutableHandle};
+use spidermonkey_wasm_sys::{
+    jsffi::JSContext,
+    jsgc::{JSRootKind, Rooted as RawRooted},
+};
 use std::pin::Pin;
 
 macro_rules! root {
-    () => {
-        
-    };
+    () => {};
 }
 
 // root!(
@@ -15,12 +16,13 @@ pub struct Rooted<'a, T: 'a + JSRootKind> {
 }
 
 impl<'a, T: 'a + JSRootKind> Rooted<'a, T> {
-     pub fn new(context: *mut JSContext, root: &'a mut RawRooted<T>, initial: T) -> Self {
-         unsafe { root.init(context, initial) };
+    pub fn new(context: *mut JSContext, root: &'a mut RawRooted<T>, initial: T) -> Self {
+        unsafe { root.init(context, initial) };
 
-         Self { root: unsafe { Pin::new_unchecked(root) } }
-     }
-    
+        Self {
+            root: unsafe { Pin::new_unchecked(root) },
+        }
+    }
 
     pub fn handle(&self) -> Handle<T> {
         Handle::new(&self.root.ptr)
@@ -34,9 +36,11 @@ impl<'a, T: 'a + JSRootKind> Rooted<'a, T> {
     }
 
     pub fn get(&self) -> T
-        where T: Copy{
-            self.root.ptr
-        }
+    where
+        T: Copy,
+    {
+        self.root.ptr
+    }
 }
 
 impl<'a, T: 'a + JSRootKind> Drop for Rooted<'a, T> {
