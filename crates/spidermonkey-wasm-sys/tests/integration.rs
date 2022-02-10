@@ -29,7 +29,8 @@ mod integration {
             assert!(jsffi::InitDefaultSelfHostedCode(context));
 
             let realm_opts = jsffi::MakeDefaultRealmOptions();
-            let global_object = jsgc::Rooted::new(
+            let mut global_object = jsgc::Rooted::default();
+            global_object.init(
                 context,
                 jsffi::JS_NewGlobalObject(
                     context,
