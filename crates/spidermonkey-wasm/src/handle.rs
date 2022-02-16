@@ -18,7 +18,7 @@ impl<'a, T: 'a> Handle<'a, T> {
         *self.ptr
     }
 
-    pub fn into_raw(&self) -> RawHandle<T> {
+    pub fn into_raw(self) -> RawHandle<T> {
         RawHandle {
             ptr: self.ptr as *const T,
             _marker: PhantomData,
@@ -35,7 +35,7 @@ impl<'a, T: 'a> MutableHandle<'a, T> {
         MutableHandle { ptr }
     }
 
-    pub fn into_raw(&mut self) -> RawMutableHandle<T> {
+    pub fn into_raw(self) -> RawMutableHandle<T> {
         RawMutableHandle {
             ptr: self.ptr as *mut T,
             _marker: PhantomData,

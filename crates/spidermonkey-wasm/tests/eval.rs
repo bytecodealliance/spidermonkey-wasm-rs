@@ -29,7 +29,7 @@ mod eval {
                 let mut return_value = jsapi::UndefinedValue();
             );
 
-            let mut return_value_handle = return_value.mut_handle();
+            let return_value_handle = return_value.mut_handle();
 
             let script = "41 + 1";
             let mut source = jsapi::MakeUtf8UnitSourceText();
