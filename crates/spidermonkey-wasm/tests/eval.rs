@@ -1,5 +1,5 @@
 mod eval {
-    use spidermonkey_wasm::{jsapi, rooted::Rooted, runtime::Runtime};
+    use spidermonkey_wasm::{jsapi, root, runtime::Runtime};
     use std::ptr;
 
     #[test]
@@ -10,17 +10,8 @@ mod eval {
 
         unsafe {
             let realm_opts = jsapi::MakeDefaultRealmOptions();
-            let mut default_global_root = jsapi::jsgc::Rooted::default();
-            let global_object = Rooted::new(
-                context,
-                &mut default_global_root,
-                jsapi::JS_NewGlobalObject(
-                    runtime.cx(),
-                    &*global_class,
-                    ptr::null_mut(),
-                    jsapi::OnNewGlobalHookOption::FireOnNewGlobalHook,
-                    &realm_opts,
-                ),
+            root!(with(context);
+                let global_object = jsapi::JS_NewGlobalObject(runtime.cx(), &*global_class, ptr::null_mut(), jsapi::OnNewGlobalHookOption::FireOnNewGlobalHook, &realm_opts);
             );
 
             let global_object_handle = global_object.handle();
@@ -34,9 +25,10 @@ mod eval {
                 },
             );
 
-            let mut unrooted_return_value = jsapi::jsgc::Rooted::default();
-            let mut return_value =
-                Rooted::new(context, &mut unrooted_return_value, jsapi::UndefinedValue());
+            root!(with(context);
+                let mut return_value = jsapi::UndefinedValue();
+            );
+
             let mut return_value_handle = return_value.mut_handle();
 
             let script = "41 + 1";

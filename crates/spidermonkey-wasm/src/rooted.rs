@@ -5,11 +5,30 @@ use spidermonkey_wasm_sys::{
 };
 use std::pin::Pin;
 
+/// Helper to root values on the stack.
+///
+/// Inspired by from: https://github.com/servo/rust-mozjs/blob/master/src/rust.rs#L546;
+/// with the difference that this implementation allows rooting multiple values at once.
+///
+/// # Usage
+///
+///     root!(with(context);
+///         let undefined_value = jsapi::UndefinedValue();
+///         let other_vaue = jsapi::UndefinedValue();
+///     );
+///
+#[macro_export]
 macro_rules! root {
-    () => {};
-}
+    (with($cx:expr); $(let $v:ident = $init:expr;)*) => { $(
+        let mut $v = $crate::jsapi::jsgc::Rooted::default();
+        let $v = $crate::rooted::Rooted::new($cx, &mut $v, $init);
+    )*};
 
-// root!(
+    (with($cx:expr); $(let mut $v:ident = $init:expr;)*) => { $(
+        let mut $v = $crate::jsapi::jsgc::Rooted::default();
+        let mut $v = $crate::rooted::Rooted::new($cx, &mut $v, $init);
+    )*};
+}
 
 pub struct Rooted<'a, T: 'a + JSRootKind> {
     root: Pin<&'a mut RawRooted<T>>,
