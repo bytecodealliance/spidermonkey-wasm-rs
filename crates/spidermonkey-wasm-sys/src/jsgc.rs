@@ -38,43 +38,24 @@ impl<T> Default for Rooted<T> {
 }
 
 impl<T> Rooted<T> {
-    pub fn new(context: *mut JSContext, ptr: T) -> Self
+    pub unsafe fn init(&mut self, context: *mut JSContext, initial: T)
     where
         T: JSRootKind,
     {
-        let mut rooted = Self::default();
-        rooted.root(context, ptr);
-        rooted
-    }
-
-    fn root(&mut self, context: *mut JSContext, ptr: T)
-    where
-        T: JSRootKind,
-    {
+        self.ptr = initial;
         let kind = T::root_kind() as usize;
         let rooting_context = context as *mut RootingContext;
-        let root_stack: *mut *mut Rooted<*mut c_void> =
-            unsafe { &mut (*rooting_context).stackRoots_[kind] as *mut _ as *mut _ };
+        let stack: *mut *mut Rooted<*mut c_void> =
+            &mut (*rooting_context).stackRoots_[kind] as *mut _ as *mut _;
 
-        self.stack = root_stack;
-        unsafe {
-            self.ptr = ptr;
-            self.prev = *root_stack;
-            *root_stack = self as *mut _ as usize as _;
-        }
+        self.stack = stack;
+        self.prev = *stack;
+        *stack = self as *mut _ as usize as _;
     }
 
-    fn remove_from_root_stack(&mut self) {
-        unsafe {
-            assert!(*self.stack == self as *mut _ as usize as _);
-            *self.stack = self.prev;
-        }
-    }
-}
-
-impl<T> Drop for Rooted<T> {
-    fn drop(&mut self) {
-        self.remove_from_root_stack();
+    pub unsafe fn remove_from_root_stack(&mut self) {
+        assert!(*self.stack == self as *mut _ as usize as _);
+        *self.stack = self.prev;
     }
 }
 
