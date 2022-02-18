@@ -125,7 +125,7 @@ pub struct MutableHandle<T> {
 }
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-#[repr(i8)]
+#[repr(u32)]
 pub enum JSGCParamKey {
     JsgcMaxBytes = 0,
     JsgcMaxNurseryBytes = 2,
@@ -170,4 +170,84 @@ pub enum JSGCParamKey {
     JsgcNurseryTimeoutForIdleCollectionMs = 46,
     JsgcSystemPageSizeKb = 47,
     JsgcUrgentThresholdMb = 48,
+}
+
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[repr(u32)]
+pub enum JSGCOptions {
+    Normal = 0,
+    Shrink = 1,
+    Shutdown = 2,
+}
+
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[repr(i8)]
+pub enum JSGCReason {
+    FirstFirefoxReason = 33,
+    FirstReservedReason = 90,
+    Api = 0,
+    EagerAllocTrigger = 1,
+    DestroyRuntime = 2,
+    RootsRemoved = 3,
+    LastDitch = 4,
+    TooMuchMalloc = 5,
+    AllocTrigger = 6,
+    DebugGc = 7,
+    CompartmentRevived = 8,
+    Reset = 9,
+    OutOfNursery = 10,
+    EvictNursery = 11,
+    DelayedAtomsGc = 12,
+    SharedMemoryLimit = 13,
+    IdleTimeCollection = 14,
+    BgTaskFinished = 15,
+    AbortGc = 16,
+    FullWholeCellBuffer = 17,
+    FullGenericBuffer = 18,
+    FullValueBuffer = 19,
+    FullCellPtrObjBuffer = 20,
+    FullSlotBuffer = 21,
+    FullShapeBuffer = 22,
+    TooMuchWasmMemory = 23,
+    DisableGenerationalGc = 24,
+    FinishGc = 25,
+    PrepareForTracing = 26,
+    Unused4 = 27,
+    FullCellPtrStrBuffer = 28,
+    TooMuchJitCode = 29,
+    FullCellPtrBigintBuffer = 30,
+    Unused5 = 31,
+    NurseryMallocBuffers = 32,
+    ComponentUtils = 34,
+    MemPressure = 35,
+    CcFinished = 36,
+    CcForced = 37,
+    LoadEnd = 38,
+    Unused3 = 39,
+    PageHide = 40,
+    NsjscontextDestroy = 41,
+    WorkerShutdown = 42,
+    SetDocShell = 43,
+    DomUtils = 44,
+    DomIpc = 45,
+    DomWorker = 46,
+    InterSliceGc = 47,
+    Unused1 = 48,
+    FullGcTimer = 49,
+    ShutdownCc = 50,
+    Unused2 = 51,
+    UserInactive = 52,
+    XpconnectShutdown = 53,
+    Docshell = 54,
+    HtmlParser = 55,
+    Reserved2 = 91,
+    Reserved3 = 92,
+    Reserved4 = 93,
+    Reserved5 = 94,
+    Reserved6 = 95,
+    Reserved7 = 96,
+    Reserved8 = 97,
+    Reserved9 = 98,
+    NoReason = 99,
+    NumReasons = 100,
 }
