@@ -40,6 +40,8 @@ impl_extern_type!(
 );
 
 impl_extern_type!(jsffi::JSGCParamKey, "JSGCParamKey", cxx::kind::Trivial);
+impl_extern_type!(jsffi::GCOptions, "JS::GCOptions", cxx::kind::Trivial);
+impl_extern_type!(jsffi::GCReason, "JS::GCReason", cxx::kind::Trivial);
 
 #[cxx::bridge]
 pub mod jsffi {
@@ -121,6 +123,14 @@ pub mod jsffi {
         type ReadOnlyCompileOptions;
         #[namespace = "JS"]
         unsafe fn DisableIncrementalGC(context: *mut JSContext);
+        #[namespace = "JS"]
+        unsafe fn PrepareForFullGC(context: *mut JSContext);
+        #[namespace = "JS"]
+        type GCOptions = crate::jsgc::JSGCOptions;
+        #[namespace = "JS"]
+        type GCReason = crate::jsgc::JSGCReason;
+        #[namespace = "JS"]
+        unsafe fn NonIncrementalGC(context: *mut JSContext, options: GCOptions, reason: GCReason);
         type JSGCParamKey = crate::jsgc::JSGCParamKey;
         unsafe fn JS_SetGCParameter(context: *mut JSContext, param_key: JSGCParamKey, value: u32);
 
