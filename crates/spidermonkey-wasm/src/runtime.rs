@@ -1,11 +1,17 @@
+use crate::{
+    handle::{HandleScript, MutableHandleValue},
+    utf8_source::Utf8Source,
+};
 use spidermonkey_wasm_sys::{
     jsffi::{
         DefaultHeapMaxBytes, DisableIncrementalGC, InitDefaultSelfHostedCode, JSContext, JSRuntime,
-        JS_DestroyContext, JS_GetRuntime, JS_Init, JS_NewContext, JS_SetGCParameter, JS_ShutDown,
-        NonIncrementalGC, PrepareForFullGC, UseInternalJobQueues,
+        JSScript, JS_DestroyContext, JS_ExecuteScript, JS_GetRuntime, JS_Init, JS_NewContext,
+        JS_SetGCParameter, JS_ShutDown, NonIncrementalGC, OwningCompileOptions, PrepareForFullGC,
+        UseInternalJobQueues, Utf8SourceCompile, Utf8SourceEvaluate,
     },
     jsgc::{JSGCOptions, JSGCParamKey, JSGCReason},
 };
+
 use std::ptr;
 
 pub struct Runtime {
@@ -67,6 +73,25 @@ impl Runtime {
     }
 
     // TODO(@saulecabrera) Add api to set gc callback
+
+    pub fn compile(&self, opts: &OwningCompileOptions, src: &mut Utf8Source) -> *mut JSScript {
+        unsafe { Utf8SourceCompile(self.context, opts, src.pin_mut()) }
+    }
+
+    pub fn execute(&self, script_handle: HandleScript, rval: MutableHandleValue) -> bool {
+        return unsafe {
+            JS_ExecuteScript(self.context, script_handle.into_raw(), rval.into_raw())
+        };
+    }
+
+    pub fn eval(
+        &self,
+        opts: &OwningCompileOptions,
+        src: &mut Utf8Source,
+        rval: MutableHandleValue,
+    ) -> bool {
+        unsafe { Utf8SourceEvaluate(self.context, opts, src.pin_mut(), rval.into_raw()) }
+    }
 }
 
 impl Drop for Runtime {
