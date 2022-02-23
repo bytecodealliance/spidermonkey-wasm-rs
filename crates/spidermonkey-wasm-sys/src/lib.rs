@@ -27,6 +27,7 @@ impl_extern_type!(jsffi::RootedScript, "JS::RootedScript", cxx::kind::Opaque);
 
 impl_extern_type!(jsffi::HandleValue, "JS::HandleValue", cxx::kind::Trivial);
 impl_extern_type!(jsffi::HandleObject, "JS::HandleObject", cxx::kind::Opaque);
+impl_extern_type!(jsffi::HandleScript, "JS::HandleScript", cxx::kind::Trivial);
 
 impl_extern_type!(
     jsffi::MutableHandleObject,
@@ -97,6 +98,8 @@ pub mod jsffi {
         type RootedScript = crate::jsgc::Rooted<*mut JSScript>;
         #[namespace = "JS"]
         type HandleObject = crate::jsgc::Handle<*mut JSObject>;
+        #[namespace = "JS"]
+        type HandleScript = crate::jsgc::Handle<*mut JSScript>;
         #[namespace = "JS"]
         type HandleValue = crate::jsgc::Handle<Value>;
         #[namespace = "JS"]

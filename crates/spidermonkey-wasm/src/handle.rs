@@ -1,6 +1,16 @@
 use std::marker::PhantomData;
 
-use spidermonkey_wasm_sys::jsgc::{Handle as RawHandle, MutableHandle as RawMutableHandle};
+use spidermonkey_wasm_sys::{
+    jsffi::{JSObject, JSScript, Value},
+    jsgc::{Handle as RawHandle, MutableHandle as RawMutableHandle},
+};
+
+pub type HandleObject<'a> = Handle<'a, *mut JSObject>;
+pub type HandleScript<'a> = Handle<'a, *mut JSScript>;
+pub type HandleValue<'a> = Handle<'a, Value>;
+pub type MutableHandleObject<'a> = MutableHandle<'a, *mut JSObject>;
+pub type MutableHandleScript<'a> = MutableHandle<'a, *mut JSScript>;
+pub type MutableHandleValue<'a> = MutableHandle<'a, Value>;
 
 pub struct Handle<'a, T: 'a> {
     ptr: &'a T,
