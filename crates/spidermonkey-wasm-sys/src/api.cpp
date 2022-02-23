@@ -49,6 +49,10 @@ bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts
   return JS::Evaluate(context, opts, src, rval);
 }
 
+JSScript* Utf8SourceCompile(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src) {
+  return JS::Compile(context, opts, src);
+}
+
 std::unique_ptr<JS::PersistentRootedObject> MakeUninitPersistentRootedObject() {
   return std::make_unique<JS::PersistentRootedObject>();
 }

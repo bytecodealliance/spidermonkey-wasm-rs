@@ -185,6 +185,18 @@ pub mod jsffi {
             rval: MutableHandleValue,
         ) -> bool;
 
+        unsafe fn Utf8SourceCompile(
+            context: *mut JSContext,
+            options: &OwningCompileOptions,
+            source: Pin<&mut Utf8UnitSourceText>,
+        ) -> *mut JSScript;
+
+        unsafe fn JS_ExecuteScript(
+            context: *mut JSContext,
+            scriptArg: HandleScript,
+            rval: MutableHandleValue,
+        ) -> bool;
+
         fn MakeUninitPersistentRootedObject() -> UniquePtr<PersistentRootedObject>;
         unsafe fn InitPersistentRootedObject(
             root: Pin<&mut PersistentRootedObject>,

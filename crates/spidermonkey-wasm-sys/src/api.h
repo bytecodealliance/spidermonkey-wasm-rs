@@ -54,6 +54,7 @@ std::unique_ptr<Utf8UnitSourceText> MakeUtf8UnitSourceText(JSContext* context, r
 bool InitDefaultSelfHostedCode(JSContext* context);
 bool InitUtf8UnitSourceText(JSContext* context, Utf8UnitSourceText& src, rust::Str units, size_t length, JS::SourceOwnership ownership);
 bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src, JS::MutableHandle<JS::Value> rval);
+JSScript* Utf8SourceCompile(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src);
 
 std::unique_ptr<JS::PersistentRootedObject> MakeUninitPersistentRootedObject();
 void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* context, JSObject* initial);
