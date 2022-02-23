@@ -49,7 +49,7 @@ uint32_t DefaultHeapMaxBytes();
 std::unique_ptr<JSClass> MakeDefaultGlobalClass();
 std::unique_ptr<JS::RealmOptions> MakeDefaultRealmOptions();
 std::unique_ptr<JS::OwningCompileOptions> MakeOwningCompileOptions(JSContext* context, const CompileOptionsParams &opts);
-std::unique_ptr<Utf8UnitSourceText> MakeUtf8UnitSourceText();
+std::unique_ptr<Utf8UnitSourceText> MakeUtf8UnitSourceText(JSContext* context, rust::Str units, size_t length, JS::SourceOwnership ownership);
 
 bool InitDefaultSelfHostedCode(JSContext* context);
 bool InitUtf8UnitSourceText(JSContext* context, Utf8UnitSourceText& src, rust::Str units, size_t length, JS::SourceOwnership ownership);

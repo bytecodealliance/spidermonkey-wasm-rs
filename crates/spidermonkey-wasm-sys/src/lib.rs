@@ -171,14 +171,13 @@ pub mod jsffi {
         fn UndefinedValue() -> Value;
         fn toInt32(self: &Value) -> i32;
 
-        unsafe fn MakeUtf8UnitSourceText() -> UniquePtr<Utf8UnitSourceText>;
-        unsafe fn InitUtf8UnitSourceText(
+        unsafe fn MakeUtf8UnitSourceText(
             context: *mut JSContext,
-            src: Pin<&mut Utf8UnitSourceText>,
             units: &str,
             length: usize,
             ownership: SourceOwnership,
-        ) -> bool;
+        ) -> UniquePtr<Utf8UnitSourceText>;
+
         unsafe fn Utf8SourceEvaluate(
             context: *mut JSContext,
             compile_opts: &OwningCompileOptions,

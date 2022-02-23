@@ -36,12 +36,13 @@ bool InitDefaultSelfHostedCode(JSContext* context) {
   return JS::InitSelfHostedCode(context);
 }
 
-std::unique_ptr<Utf8UnitSourceText> MakeUtf8UnitSourceText() {
-  return std::make_unique<Utf8UnitSourceText>();
-}
+std::unique_ptr<Utf8UnitSourceText> MakeUtf8UnitSourceText(JSContext* context, rust::Str units, size_t length, JS::SourceOwnership ownership) {
+  auto src = std::make_unique<Utf8UnitSourceText>();
+  if (!src->init(context, units.data(), length, ownership)) {
+      src.reset(nullptr);
+  }
 
-bool InitUtf8UnitSourceText(JSContext* context, Utf8UnitSourceText& src, rust::Str units, size_t length, JS::SourceOwnership ownership) {
-  return src.init(context, units.data(), length, ownership);
+  return src;
 }
 
 bool Utf8SourceEvaluate(JSContext* context, const JS::OwningCompileOptions& opts, Utf8UnitSourceText& src, JS::MutableHandle<JS::Value> rval) {
