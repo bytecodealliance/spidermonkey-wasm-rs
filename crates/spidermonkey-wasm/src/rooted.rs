@@ -7,7 +7,7 @@ use std::pin::Pin;
 
 /// Helper to root values on the stack.
 ///
-/// Inspired by from: https://github.com/servo/rust-mozjs/blob/master/src/rust.rs#L546;
+/// Inspired by: https://github.com/servo/rust-mozjs/blob/master/src/rust.rs#L546;
 /// with the difference that this implementation allows rooting multiple values at once.
 ///
 /// # Usage
