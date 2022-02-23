@@ -3,6 +3,7 @@ extern crate link_cplusplus;
 pub mod jsgc;
 pub mod jsrealm;
 pub mod jsval;
+pub use cxx::UniquePtr;
 
 use cxx::{type_id, ExternType};
 
