@@ -25,6 +25,12 @@ pub struct Runtime {
 // use case. This implementation can be expanded if necessary.
 impl Default for Runtime {
     fn default() -> Self {
+        // TODO(@saulecabrera)
+        // Implement `new` instead of default,
+        // which should return anyhow::Result<Self>;
+        // with specific errors depending on the init
+        // failure: JS_Init, InternalJobQueues, SelfHostedCode
+        //
         assert!(JS_Init());
 
         let context: *mut JSContext =
