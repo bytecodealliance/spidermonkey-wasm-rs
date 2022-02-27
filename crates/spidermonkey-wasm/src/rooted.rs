@@ -1,9 +1,14 @@
 use crate::handle::{Handle, MutableHandle};
 use spidermonkey_wasm_sys::{
-    jsffi::JSContext,
+    jsffi::{JSContext, JSObject, JSScript, JSString, Value},
     jsgc::{JSRootKind, Rooted as RawRooted},
 };
 use std::pin::Pin;
+
+pub type RootedValue<'a> = Rooted<'a, Value>;
+pub type RootedObject<'a> = Rooted<'a, *mut JSObject>;
+pub type RootedScript<'a> = Rooted<'a, *mut JSScript>;
+pub type RootedString<'a> = Rooted<'a, *mut JSString>;
 
 /// Helper to root values on the stack.
 ///

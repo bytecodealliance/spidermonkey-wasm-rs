@@ -58,14 +58,12 @@ mod integration {
             };
 
             let script = "41 + 1";
-            let mut source = jsffi::MakeUtf8UnitSourceText();
-            assert!(jsffi::InitUtf8UnitSourceText(
+            let mut source = jsffi::MakeUtf8UnitSourceText(
                 context,
-                source.pin_mut(),
                 &script,
                 script.len(),
-                jsffi::SourceOwnership::Borrowed
-            ));
+                jsffi::SourceOwnership::Borrowed,
+            );
 
             jsffi::Utf8SourceEvaluate(context, &owning_compile_options, source.pin_mut(), rval);
 

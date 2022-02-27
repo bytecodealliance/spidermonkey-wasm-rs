@@ -3,6 +3,7 @@ extern crate link_cplusplus;
 pub mod jsgc;
 pub mod jsrealm;
 pub mod jsval;
+pub use cxx::UniquePtr;
 
 use cxx::{type_id, ExternType};
 
@@ -27,6 +28,7 @@ impl_extern_type!(jsffi::RootedScript, "JS::RootedScript", cxx::kind::Opaque);
 
 impl_extern_type!(jsffi::HandleValue, "JS::HandleValue", cxx::kind::Trivial);
 impl_extern_type!(jsffi::HandleObject, "JS::HandleObject", cxx::kind::Opaque);
+impl_extern_type!(jsffi::HandleScript, "JS::HandleScript", cxx::kind::Trivial);
 
 impl_extern_type!(
     jsffi::MutableHandleObject,
@@ -97,6 +99,8 @@ pub mod jsffi {
         type RootedScript = crate::jsgc::Rooted<*mut JSScript>;
         #[namespace = "JS"]
         type HandleObject = crate::jsgc::Handle<*mut JSObject>;
+        #[namespace = "JS"]
+        type HandleScript = crate::jsgc::Handle<*mut JSScript>;
         #[namespace = "JS"]
         type HandleValue = crate::jsgc::Handle<Value>;
         #[namespace = "JS"]
@@ -171,18 +175,29 @@ pub mod jsffi {
         fn UndefinedValue() -> Value;
         fn toInt32(self: &Value) -> i32;
 
-        unsafe fn MakeUtf8UnitSourceText() -> UniquePtr<Utf8UnitSourceText>;
-        unsafe fn InitUtf8UnitSourceText(
+        unsafe fn MakeUtf8UnitSourceText(
             context: *mut JSContext,
-            src: Pin<&mut Utf8UnitSourceText>,
             units: &str,
             length: usize,
             ownership: SourceOwnership,
-        ) -> bool;
+        ) -> UniquePtr<Utf8UnitSourceText>;
+
         unsafe fn Utf8SourceEvaluate(
             context: *mut JSContext,
             compile_opts: &OwningCompileOptions,
             source: Pin<&mut Utf8UnitSourceText>,
+            rval: MutableHandleValue,
+        ) -> bool;
+
+        unsafe fn Utf8SourceCompile(
+            context: *mut JSContext,
+            options: &OwningCompileOptions,
+            source: Pin<&mut Utf8UnitSourceText>,
+        ) -> *mut JSScript;
+
+        unsafe fn JS_ExecuteScript(
+            context: *mut JSContext,
+            scriptArg: HandleScript,
             rval: MutableHandleValue,
         ) -> bool;
 
