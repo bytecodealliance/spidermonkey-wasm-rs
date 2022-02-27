@@ -12,6 +12,7 @@ use spidermonkey_wasm_sys::{
     jsgc::{JSGCOptions, JSGCParamKey, JSGCReason},
 };
 
+use anyhow::{bail, Result};
 use std::ptr;
 
 pub struct Runtime {
@@ -74,14 +75,29 @@ impl Runtime {
 
     // TODO(@saulecabrera) Add api to set gc callback
 
-    pub fn compile(&self, opts: &OwningCompileOptions, src: &mut Utf8Source) -> *mut JSScript {
-        unsafe { Utf8SourceCompile(self.context, opts, src.pin_mut()) }
+    pub fn compile(
+        &self,
+        opts: &OwningCompileOptions,
+        src: &mut Utf8Source,
+    ) -> Result<*mut JSScript> {
+        let ptr = unsafe { Utf8SourceCompile(self.context, opts, src.pin_mut()) };
+
+        if ptr.is_null() {
+            bail!("Script compilation failed");
+        }
+
+        Ok(ptr)
     }
 
-    pub fn execute(&self, script_handle: HandleScript, rval: MutableHandleValue) -> bool {
-        return unsafe {
-            JS_ExecuteScript(self.context, script_handle.into_raw(), rval.into_raw())
-        };
+    pub fn execute(&self, script_handle: HandleScript, rval: MutableHandleValue) -> Result<()> {
+        let success =
+            unsafe { JS_ExecuteScript(self.context, script_handle.into_raw(), rval.into_raw()) };
+
+        if !success {
+            bail!("Script execution failed");
+        }
+
+        Ok(())
     }
 
     pub fn eval(
@@ -89,8 +105,13 @@ impl Runtime {
         opts: &OwningCompileOptions,
         src: &mut Utf8Source,
         rval: MutableHandleValue,
-    ) -> bool {
-        unsafe { Utf8SourceEvaluate(self.context, opts, src.pin_mut(), rval.into_raw()) }
+    ) -> Result<()> {
+        let success =
+            unsafe { Utf8SourceEvaluate(self.context, opts, src.pin_mut(), rval.into_raw()) };
+        if !success {
+            bail!("Eval failed");
+        }
+        Ok(())
     }
 }
 

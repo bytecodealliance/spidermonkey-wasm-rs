@@ -1,3 +1,4 @@
+use anyhow::{bail, Result};
 use spidermonkey_wasm_sys::{
     jsffi::{CompileOptionsParams, JSContext, MakeOwningCompileOptions, OwningCompileOptions},
     UniquePtr,
@@ -14,16 +15,20 @@ impl CompilationOptions {
         lineno: usize,
         force_full_parse: bool,
         file: String,
-    ) -> Self {
+    ) -> Result<Self> {
         let opts = CompileOptionsParams {
             lineno,
             force_full_parse,
             file,
         };
 
-        Self {
-            inner: unsafe { MakeOwningCompileOptions(context, &opts) },
+        let inner = unsafe { MakeOwningCompileOptions(context, &opts) };
+
+        if inner.is_null() {
+            bail!("Couldn't create compilation options")
         }
+
+        Ok(Self { inner })
     }
 }
 

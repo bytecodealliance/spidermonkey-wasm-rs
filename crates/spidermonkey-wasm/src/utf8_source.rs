@@ -1,3 +1,4 @@
+use anyhow::{bail, Result};
 use spidermonkey_wasm_sys::{
     jsffi::{JSContext, MakeUtf8UnitSourceText, SourceOwnership, Utf8UnitSourceText},
     UniquePtr,
@@ -9,12 +10,15 @@ pub struct Utf8Source {
 }
 
 impl Utf8Source {
-    pub fn new(context: *mut JSContext, src: &str) -> Self {
-        Self {
-            inner: unsafe {
-                MakeUtf8UnitSourceText(context, src, src.len(), SourceOwnership::Borrowed)
-            },
+    pub fn new(context: *mut JSContext, src: &str) -> Result<Self> {
+        let inner =
+            unsafe { MakeUtf8UnitSourceText(context, src, src.len(), SourceOwnership::Borrowed) };
+
+        if inner.is_null() {
+            bail!("Could not initialize Utf8Source");
         }
+
+        Ok(Self { inner })
     }
 
     pub fn pin_mut(&mut self) -> Pin<&mut Utf8UnitSourceText> {
