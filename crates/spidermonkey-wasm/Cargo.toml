@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 spidermonkey-wasm-sys = { path = "../spidermonkey-wasm-sys" }
+anyhow = "1.0.55"
