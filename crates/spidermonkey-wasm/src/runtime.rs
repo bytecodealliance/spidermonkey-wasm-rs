@@ -23,29 +23,33 @@ pub struct Runtime {
 // relationship between runtimes. It assumes a single, top level runtime
 // and a single context. This should be enough for the Wasm
 // use case. This implementation can be expanded if necessary.
-impl Default for Runtime {
-    fn default() -> Self {
-        // TODO(@saulecabrera)
-        // Implement `new` instead of default,
-        // which should return anyhow::Result<Self>;
-        // with specific errors depending on the init
-        // failure: JS_Init, InternalJobQueues, SelfHostedCode
-        //
-        assert!(JS_Init());
+
+impl Runtime {
+    pub fn new() -> Result<Self> {
+        if !JS_Init() {
+            bail!("Couldn't initialize runtime. Call to JS_Init failed");
+        }
 
         let context: *mut JSContext =
             unsafe { JS_NewContext(DefaultHeapMaxBytes(), ptr::null_mut()) };
 
-        unsafe {
-            assert!(UseInternalJobQueues(context));
-            assert!(InitDefaultSelfHostedCode(context));
+        if context.is_null() {
+            bail!("Couldn't create context");
         }
 
-        Self { context }
-    }
-}
+        unsafe {
+            if !UseInternalJobQueues(context) {
+                bail!("Couldn't initialize runtime. Call to UseInternalJobQueues failed");
+            }
 
-impl Runtime {
+            if !InitDefaultSelfHostedCode(context) {
+                bail!("Couldn't initialize runtime. Call to InitDefaultSelfHostedCode failed");
+            }
+        }
+
+        Ok(Self { context })
+    }
+
     pub fn cx(&self) -> *mut JSContext {
         self.context
     }
@@ -137,13 +141,13 @@ mod tests {
 
     #[test]
     fn cx() {
-        let rt = Runtime::default();
+        let rt = Runtime::new().unwrap();
         assert!(!rt.cx().is_null());
     }
 
     #[test]
     fn rt() {
-        let rt = Runtime::default();
+        let rt = Runtime::new().unwrap();
         assert!(!rt.rt().is_null());
     }
 }
