@@ -15,10 +15,10 @@
 
 ## Development
 - `git submodule update --recursive --init` to pull in [spidermonkey-wasm-build](https://github.com/bytecodealliance/spidermonkey-wasm-build)
-- `cd crates/spidermonkey-wasm-sys/spidermonkey-wasm-build && ./download.sh`
-- `cd crates/spidermonkey-wasm-sys`
-  - `make build` or `make build-release`
-  - `make test`
+- `cd crates/spidermonkey-wasm-sys/spidermonkey-wasm-build && ./download.sh` to pull in SpiderMonkey build artifacts
+- In `cd crates/spidermonkey-wasm`, run:
+  - `cargo build`  to build
+  - `cargo wasi test` to run tests
 
 
 
