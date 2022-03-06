@@ -7,7 +7,7 @@ mod compile {
 
     #[test]
     fn compile() {
-        let runtime = Runtime::default();
+        let runtime = Runtime::new().unwrap();
         let global_class = jsapi::MakeDefaultGlobalClass();
         let context = runtime.cx();
 
@@ -42,7 +42,7 @@ mod compile {
 
     #[test]
     fn compile_fail() {
-        let runtime = Runtime::default();
+        let runtime = Runtime::new().unwrap();
         let global_class = jsapi::MakeDefaultGlobalClass();
         let context = runtime.cx();
 

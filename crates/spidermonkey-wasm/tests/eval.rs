@@ -7,7 +7,7 @@ mod eval {
 
     #[test]
     fn eval() {
-        let runtime = Runtime::default();
+        let runtime = Runtime::new().unwrap();
         let global_class = jsapi::MakeDefaultGlobalClass();
         let context = runtime.cx();
 
