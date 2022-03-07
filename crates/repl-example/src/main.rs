@@ -34,7 +34,7 @@ fn do_loop(runtime: &Runtime, global: HandleObject) {
 
 fn eval(runtime: &Runtime, buffer: &str, at: usize) {
     let context = runtime.cx();
-    let compilation_opts = CompilationOptions::new(context, at, false, "repl".into());
+    let compilation_opts = CompilationOptions::new(context, at, false, "repl".into()).unwrap();
     let mut script = Utf8Source::new(context, buffer).unwrap();
 
     root!(with(context); let ret_val = jsapi::UndefinedValue(););
