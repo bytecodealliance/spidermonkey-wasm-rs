@@ -174,6 +174,7 @@ pub mod jsffi {
         #[namespace = "JS"]
         fn UndefinedValue() -> Value;
         fn toInt32(self: &Value) -> i32;
+        fn isString(self: &Value) -> bool;
 
         unsafe fn MakeUtf8UnitSourceText(
             context: *mut JSContext,
