@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use spidermonkey_wasm_sys::{
-    jsffi::{JSObject, JSScript, Value},
+    jsffi::{JSObject, JSScript, JSString, Value},
     jsgc::{Handle as RawHandle, MutableHandle as RawMutableHandle},
 };
 
