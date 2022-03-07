@@ -51,9 +51,13 @@ fn fmt_result(runtime: &Runtime, result: jsapi::Value) -> String {
         root!(with(context); let js_string = result.toString(););
         return fmt_string(&runtime, js_string.handle());
     }
+
+    "".into()
 }
 
-fn fmt_string(runtime: &Runtime, js_string: HandleString) -> String {}
+fn fmt_string(runtime: &Runtime, js_string: HandleString) -> String {
+    "".into()
+}
 
 fn buffer(
     runtime: &Runtime,
