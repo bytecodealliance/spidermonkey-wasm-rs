@@ -208,5 +208,7 @@ pub mod jsffi {
             initial: *mut JSObject,
         );
         fn initialized(self: &PersistentRootedObject) -> bool;
+
+        unsafe fn Utf8IsCompilableUnit(context: *mut JSContext, global: HandleObject, source: &str) -> bool;
     }
 }

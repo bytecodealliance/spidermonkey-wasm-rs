@@ -59,3 +59,4 @@ JSScript* Utf8SourceCompile(JSContext* context, const JS::OwningCompileOptions& 
 std::unique_ptr<JS::PersistentRootedObject> MakeUninitPersistentRootedObject();
 void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* context, JSObject* initial);
 
+bool Utf8IsCompilableUnit(JSContext* context, JS::HandleObject global, rust::Str source);

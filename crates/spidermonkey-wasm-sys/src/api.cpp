@@ -64,3 +64,7 @@ void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* cont
 uint32_t DefaultHeapMaxBytes() {
   return JS::DefaultHeapMaxBytes;
 }
+
+bool Utf8IsCompilableUnit(JSContext* context, JS::HandleObject global, rust::Str source) {
+  return JS_Utf8BufferIsCompilableUnit(context, global, source.data(), source.length());
+}
