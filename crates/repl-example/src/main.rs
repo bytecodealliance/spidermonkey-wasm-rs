@@ -1,4 +1,10 @@
-use spidermonkey_wasm::{jsapi, root, runtime::Runtime, handle::{HandleObject, HandleString}, compilation_options::CompilationOptions, utf8_source::Utf8Source};
+use spidermonkey_wasm::{
+    compilation_options::CompilationOptions,
+    handle::{HandleObject, HandleString},
+    jsapi, root,
+    runtime::Runtime,
+    utf8_source::Utf8Source,
+};
 use std::ptr;
 
 fn main() {
@@ -15,7 +21,6 @@ fn main() {
     let _ar = jsapi::jsrealm::JSAutoRealm::new(context, global_object_handle.get());
 }
 
-
 fn do_loop(runtime: &Runtime, global: HandleObject) {
     let mut lineno = 1;
     let mut eof = false;
@@ -24,7 +29,6 @@ fn do_loop(runtime: &Runtime, global: HandleObject) {
         let startline: usize = lineno;
         let prompt = "sm-wasm > ";
         let input: String = buffer(&runtime, global, prompt, &mut eof, &mut lineno);
-
     }
 }
 
@@ -35,24 +39,29 @@ fn eval(runtime: &Runtime, buffer: &str, at: usize) {
 
     root!(with(context); let ret_val = jsapi::UndefinedValue(););
 
-
-    runtime.eval(&compilation_opts, &mut script, ret_val).unwrap();
+    runtime
+        .eval(&compilation_opts, &mut script, ret_val)
+        .unwrap();
 }
 
 fn fmt_result(runtime: &Runtime, result: jsapi::Value) -> String {
     let context = runtime.cx();
-    
+
     if result.isString() {
         root!(with(context); let js_string = result.toString(););
         return fmt_string(&runtime, js_string.handle());
     }
 }
 
-fn fmt_string(runtime: &Runtime, js_string: HandleString) -> String {
+fn fmt_string(runtime: &Runtime, js_string: HandleString) -> String {}
 
-}
-
-fn buffer(runtime: &Runtime, global: HandleObject, prompt: &str, eof: &mut bool, lineno: &mut usize) -> String {
+fn buffer(
+    runtime: &Runtime,
+    global: HandleObject,
+    prompt: &str,
+    eof: &mut bool,
+    lineno: &mut usize,
+) -> String {
     let mut buffer: String = "".into();
 
     loop {
@@ -66,7 +75,8 @@ fn buffer(runtime: &Runtime, global: HandleObject, prompt: &str, eof: &mut bool,
         buffer.push_str(&input);
         *lineno += 1;
 
-        if !unsafe { jsapi::Utf8IsCompilableUnit(runtime.cx(), global.clone().into_raw(), &buffer) } {
+        if !unsafe { jsapi::Utf8IsCompilableUnit(runtime.cx(), global.clone().into_raw(), &buffer) }
+        {
             break;
         }
     }
