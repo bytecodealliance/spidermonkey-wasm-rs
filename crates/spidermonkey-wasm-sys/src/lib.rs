@@ -27,7 +27,7 @@ impl_extern_type!(jsffi::RootedString, "JS::RootedString", cxx::kind::Opaque);
 impl_extern_type!(jsffi::RootedScript, "JS::RootedScript", cxx::kind::Opaque);
 
 impl_extern_type!(jsffi::HandleValue, "JS::HandleValue", cxx::kind::Trivial);
-impl_extern_type!(jsffi::HandleObject, "JS::HandleObject", cxx::kind::Opaque);
+impl_extern_type!(jsffi::HandleObject, "JS::HandleObject", cxx::kind::Trivial);
 impl_extern_type!(jsffi::HandleScript, "JS::HandleScript", cxx::kind::Trivial);
 
 impl_extern_type!(
