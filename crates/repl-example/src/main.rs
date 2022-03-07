@@ -37,10 +37,10 @@ fn eval(runtime: &Runtime, buffer: &str, at: usize) {
     let compilation_opts = CompilationOptions::new(context, at, false, "repl".into()).unwrap();
     let mut script = Utf8Source::new(context, buffer).unwrap();
 
-    root!(with(context); let ret_val = jsapi::UndefinedValue(););
+    root!(with(context); let mut ret_val = jsapi::UndefinedValue(););
 
     runtime
-        .eval(&compilation_opts, &mut script, ret_val)
+        .eval(&compilation_opts, &mut script, ret_val.mut_handle())
         .unwrap();
 }
 
