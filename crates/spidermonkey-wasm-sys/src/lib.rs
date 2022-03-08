@@ -223,10 +223,7 @@ pub mod jsffi {
         #[namespace = "JS"]
         unsafe fn ToString(context: *mut JSContext, value: HandleValue) -> *mut JSString;
 
-        unsafe fn JSStringToRustString(
-            context: *mut JSContext,
-            string: HandleString,
-        ) -> String;
+        unsafe fn JSStringToRustString(context: *mut JSContext, string: HandleString) -> String;
 
         unsafe fn ReportException(context: *mut JSContext) -> bool;
 

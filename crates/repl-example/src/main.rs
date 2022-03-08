@@ -1,6 +1,6 @@
 use spidermonkey_wasm::{
     compilation_options::CompilationOptions,
-    handle::{HandleObject, HandleString},
+    handle::{HandleObject, HandleString, HandleValue},
     jsapi, root,
     runtime::Runtime,
     utf8_source::Utf8Source,
@@ -19,16 +19,20 @@ fn main() {
 
     let global_object_handle = global_object.handle();
     let _ar = jsapi::jsrealm::JSAutoRealm::new(context, global_object_handle.get());
+
+    do_loop(&runtime, global_object_handle);
 }
 
 fn do_loop(runtime: &Runtime, global: HandleObject) {
     let mut lineno = 1;
-    let mut eof = false;
 
     loop {
         let startline: usize = lineno;
-        let prompt = "sm-wasm > ";
-        let input: String = buffer(&runtime, global, prompt, &mut eof, &mut lineno);
+        let input: String = buffer(&runtime, global, &mut lineno, startline);
+
+        eval(&runtime, &input, startline);
+
+        unsafe { jsapi::RunJobs(runtime.cx()) };
     }
 }
 
@@ -41,45 +45,52 @@ fn eval(runtime: &Runtime, buffer: &str, at: usize) {
 
     runtime
         .eval(&compilation_opts, &mut script, ret_val.mut_handle())
-        .unwrap();
+        .unwrap_or_else(|_| {
+            let success = unsafe { jsapi::ReportException(context) };
+
+            if !success {
+                panic!("Couldn't report exception");
+            }
+        });
+
+    let result = fmt_result(&runtime, ret_val.handle());
+
+    println!("{}", result);
 }
 
-fn fmt_result(runtime: &Runtime, result: jsapi::Value) -> String {
+fn fmt_result(runtime: &Runtime, result: HandleValue) -> String {
     let context = runtime.cx();
 
-    if result.isString() {
-        root!(with(context); let js_string = result.toString(););
+    if result.get().isString() {
+        root!(with(context); let js_string = result.get().toString(););
         return fmt_string(&runtime, js_string.handle());
     }
 
-    "".into()
+    root!(with(context); let mut js_string = unsafe { jsapi::ToString(context, result.into_raw()) };);
+
+    return unsafe { jsapi::JSStringToRustString(context, js_string.handle().into_raw()) };
 }
 
 fn fmt_string(runtime: &Runtime, js_string: HandleString) -> String {
-    "".into()
+    return unsafe { jsapi::JSStringToRustString(runtime.cx(), js_string.into_raw()) };
 }
 
-fn buffer(
-    runtime: &Runtime,
-    global: HandleObject,
-    prompt: &str,
-    eof: &mut bool,
-    lineno: &mut usize,
-) -> String {
+fn buffer(runtime: &Runtime, global: HandleObject, lineno: &mut usize, startline: usize) -> String {
     let mut buffer: String = "".into();
 
     loop {
-        let input: String = promptly::prompt(prompt).unwrap();
+        let prompt = if startline == *lineno {
+            "sm-wasm > "
+        } else {
+            ".. "
+        };
 
-        if input.is_empty() {
-            *eof = true;
-            break;
-        }
+        let input: String = promptly::prompt(prompt).unwrap();
 
         buffer.push_str(&input);
         *lineno += 1;
 
-        if !unsafe { jsapi::Utf8IsCompilableUnit(runtime.cx(), global.clone().into_raw(), &buffer) }
+        if unsafe { jsapi::Utf8IsCompilableUnit(runtime.cx(), global.clone().into_raw(), &buffer) }
         {
             break;
         }
