@@ -211,6 +211,10 @@ pub mod jsffi {
         );
         fn initialized(self: &PersistentRootedObject) -> bool;
 
-        unsafe fn Utf8IsCompilableUnit(context: *mut JSContext, global: HandleObject, source: &str) -> bool;
+        unsafe fn Utf8IsCompilableUnit(
+            context: *mut JSContext,
+            global: HandleObject,
+            source: &str,
+        ) -> bool;
     }
 }
