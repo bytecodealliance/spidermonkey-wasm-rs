@@ -27,7 +27,8 @@ impl_extern_type!(jsffi::RootedString, "JS::RootedString", cxx::kind::Opaque);
 impl_extern_type!(jsffi::RootedScript, "JS::RootedScript", cxx::kind::Opaque);
 
 impl_extern_type!(jsffi::HandleValue, "JS::HandleValue", cxx::kind::Trivial);
-impl_extern_type!(jsffi::HandleObject, "JS::HandleObject", cxx::kind::Opaque);
+impl_extern_type!(jsffi::HandleString, "JS::HandleString", cxx::kind::Trivial);
+impl_extern_type!(jsffi::HandleObject, "JS::HandleObject", cxx::kind::Trivial);
 impl_extern_type!(jsffi::HandleScript, "JS::HandleScript", cxx::kind::Trivial);
 
 impl_extern_type!(
@@ -104,6 +105,8 @@ pub mod jsffi {
         #[namespace = "JS"]
         type HandleValue = crate::jsgc::Handle<Value>;
         #[namespace = "JS"]
+        type HandleString = crate::jsgc::Handle<*mut JSString>;
+        #[namespace = "JS"]
         type MutableHandleObject = crate::jsgc::MutableHandle<*mut JSObject>;
         #[namespace = "JS"]
         type MutableHandleValue = crate::jsgc::MutableHandle<Value>;
@@ -174,6 +177,8 @@ pub mod jsffi {
         #[namespace = "JS"]
         fn UndefinedValue() -> Value;
         fn toInt32(self: &Value) -> i32;
+        fn isString(self: &Value) -> bool;
+        fn toString(self: &Value) -> *mut JSString;
 
         unsafe fn MakeUtf8UnitSourceText(
             context: *mut JSContext,
@@ -208,5 +213,21 @@ pub mod jsffi {
             initial: *mut JSObject,
         );
         fn initialized(self: &PersistentRootedObject) -> bool;
+
+        unsafe fn Utf8IsCompilableUnit(
+            context: *mut JSContext,
+            global: HandleObject,
+            source: &str,
+        ) -> bool;
+
+        #[namespace = "JS"]
+        unsafe fn ToString(context: *mut JSContext, value: HandleValue) -> *mut JSString;
+
+        unsafe fn JSStringToRustString(context: *mut JSContext, string: HandleString) -> String;
+
+        unsafe fn ReportException(context: *mut JSContext) -> bool;
+
+        #[namespace = "js"]
+        unsafe fn RunJobs(context: *mut JSContext);
     }
 }

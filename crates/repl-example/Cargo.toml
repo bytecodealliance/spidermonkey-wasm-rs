@@ -1,0 +1,9 @@
+[package]
+name = "repl-example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+spidermonkey-wasm = { path = "../spidermonkey-wasm" }
+anyhow = "1.0.55"
+promptly = "0.3.0"

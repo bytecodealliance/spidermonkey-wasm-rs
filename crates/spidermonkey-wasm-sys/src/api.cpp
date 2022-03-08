@@ -64,3 +64,30 @@ void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* cont
 uint32_t DefaultHeapMaxBytes() {
   return JS::DefaultHeapMaxBytes;
 }
+
+bool Utf8IsCompilableUnit(JSContext* context, JS::HandleObject global, rust::Str source) {
+  return JS_Utf8BufferIsCompilableUnit(context, global, source.data(), source.length());
+}
+
+rust::String JSStringToRustString(JSContext* context, JS::HandleString str) {
+  JS::UniqueChars chars = JS_EncodeStringToUTF8(context, str);
+  return rust::String(chars.get());
+}
+
+bool ReportException(JSContext* context) {
+  JS::ExceptionStack stack(context);
+
+  if (!JS::StealPendingExceptionStack(context, &stack)) {
+    return false;
+  }
+
+  JS::ErrorReportBuilder report(context);
+  if (!report.init(context, stack, JS::ErrorReportBuilder::WithSideEffects)) {
+    return false;
+  }
+
+  JS::PrintError(stderr, report, false);
+
+  return true;
+}
+
