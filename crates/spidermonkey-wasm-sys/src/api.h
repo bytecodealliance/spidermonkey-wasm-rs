@@ -60,3 +60,7 @@ std::unique_ptr<JS::PersistentRootedObject> MakeUninitPersistentRootedObject();
 void InitPersistentRootedObject(JS::PersistentRootedObject& obj, JSContext* context, JSObject* initial);
 
 bool Utf8IsCompilableUnit(JSContext* context, JS::HandleObject global, rust::Str source);
+
+rust::String JSStringToRustString(JSContext* context, JS::HandleString str);
+
+bool ReportException(JSContext* context);

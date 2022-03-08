@@ -216,5 +216,18 @@ pub mod jsffi {
             global: HandleObject,
             source: &str,
         ) -> bool;
+
+        #[namespace = "JS"]
+        unsafe fn ToString(context: *mut JSContext, value: HandleValue) -> *mut JSString;
+
+        unsafe fn JSStringToRustString(
+            context: *mut JSContext,
+            string: HandleString,
+        ) -> String;
+
+        unsafe fn ReportException(context: *mut JSContext) -> bool;
+
+        #[namespace = "js"]
+        unsafe fn RunJobs(context: *mut JSContext);
     }
 }
