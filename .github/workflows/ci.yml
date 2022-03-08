@@ -68,6 +68,11 @@ jobs:
           cargo wasi test
           cd -
 
+      - name: Check repl-example
+        run: |
+          cd crates/repl-example
+          ./build.sh check
+
       - name: Lint
         run: cargo fmt -- --check
  
