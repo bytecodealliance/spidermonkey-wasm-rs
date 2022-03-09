@@ -1,7 +1,8 @@
 use anyhow::{bail, Result};
 use spidermonkey_wasm_sys::jsffi::{
-    JSClass, JSContext, JSObject, JSString, JSStringToRustString, JS_NewGlobalObject,
-    OnNewGlobalHookOption, RealmOptions, ReportException, RunJobs, ToString, Utf8IsCompilableUnit,
+    context_options_ref as raw_context_options_ref, ContextOptions, JSClass, JSContext, JSObject,
+    JSString, JSStringToRustString, JS_NewGlobalObject, OnNewGlobalHookOption, RealmOptions,
+    ReportException, RunJobs, ToString, Utf8IsCompilableUnit,
 };
 
 // Re-exports of safe bindings from the sys crate
@@ -11,7 +12,7 @@ pub use spidermonkey_wasm_sys::jsffi::{
 
 use crate::handle::{HandleObject, HandleString, HandleValue};
 
-use std::ptr;
+use std::{pin::Pin, ptr};
 
 pub fn new_global_object(
     cx: *mut JSContext,
@@ -53,4 +54,8 @@ pub fn to_rust_string(cx: *mut JSContext, val: HandleString) -> String {
 
 pub fn is_compilable_unit(cx: *mut JSContext, handle: HandleObject, buffer: &str) -> bool {
     unsafe { Utf8IsCompilableUnit(cx, handle.into_raw(), buffer) }
+}
+
+pub fn context_options_ref<'a>(cx: *mut JSContext) -> Pin<&'a mut ContextOptions> {
+    unsafe { raw_context_options_ref(cx) }
 }
