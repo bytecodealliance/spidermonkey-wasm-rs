@@ -85,6 +85,8 @@ pub mod jsffi {
         type JSString;
 
         #[namespace = "JS"]
+        type ContextOptions;
+        #[namespace = "JS"]
         type SourceOwnership;
         #[namespace = "JS"]
         type Value = crate::jsval::Value;
@@ -240,5 +242,35 @@ pub mod jsffi {
 
         #[namespace = "js"]
         unsafe fn RunJobs(context: *mut JSContext);
+
+        #[namespace = "JS"]
+        #[rust_name = "context_options_ref"]
+        unsafe fn ContextOptionsRef<'a>(context: *mut JSContext) -> Pin<&'a mut ContextOptions>;
+        #[rust_name = "set_private_class_fields"]
+        fn setPrivateClassFields<'a>(
+            self: Pin<&mut ContextOptions>,
+            private_class_fields: bool,
+        ) -> Pin<&'a mut ContextOptions>;
+        #[rust_name = "private_class_fields"]
+        fn privateClassFields(self: &ContextOptions) -> bool;
+        #[rust_name = "set_private_class_methods"]
+        fn setPrivateClassMethods<'a>(
+            self: Pin<&mut ContextOptions>,
+            private_class_methods: bool,
+        ) -> Pin<&'a mut ContextOptions>;
+        #[rust_name = "private_class_methods"]
+        fn privateClassMethods(self: &ContextOptions) -> bool;
+        #[rust_name = "set_class_static_blocks"]
+        fn setClassStaticBlocks<'a>(
+            self: Pin<&mut ContextOptions>,
+            class_static_blocks: bool,
+        ) -> Pin<&'a mut ContextOptions>;
+        #[rust_name = "class_static_blocks"]
+        fn classStaticBlocks(self: &ContextOptions) -> bool;
+        #[rust_name = "set_ergonomic_brand_checks"]
+        fn setErgnomicBrandChecks<'a>(
+            self: Pin<&mut ContextOptions>,
+            ergnomic_brand_checks: bool,
+        ) -> Pin<&'a mut ContextOptions>;
     }
 }
