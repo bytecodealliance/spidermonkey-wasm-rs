@@ -25,12 +25,12 @@ pub type RootedString<'a> = Rooted<'a, *mut JSString>;
 #[macro_export]
 macro_rules! root {
     (with($cx:expr); $(let $v:ident = $init:expr;)*) => { $(
-        let mut $v = $crate::jsapi::jsgc::Rooted::default();
+        let mut $v = $crate::RawRooted::default();
         let $v = $crate::rooted::Rooted::new($cx, &mut $v, $init);
     )*};
 
     (with($cx:expr); $(let mut $v:ident = $init:expr;)*) => { $(
-        let mut $v = $crate::jsapi::jsgc::Rooted::default();
+        let mut $v = $crate::RawRooted::default();
         let mut $v = $crate::rooted::Rooted::new($cx, &mut $v, $init);
     )*};
 }
