@@ -11,7 +11,7 @@ mod context_opts {
             .set_private_class_fields(true)
             .set_class_static_blocks(true)
             .set_private_class_methods(true)
-            .set_ergonomic_brand_checks(true);
+            .set_ergnomic_brand_checks(true);
 
         assert!(opts_ref.private_class_fields());
         assert!(opts_ref.private_class_methods());
@@ -28,7 +28,7 @@ mod context_opts {
             .set_private_class_fields(false)
             .set_class_static_blocks(false)
             .set_private_class_methods(false)
-            .set_ergonomic_brand_checks(false);
+            .set_ergnomic_brand_checks(false);
 
         assert!(!opts_ref.private_class_fields());
         assert!(!opts_ref.private_class_methods());

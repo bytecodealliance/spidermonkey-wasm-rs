@@ -267,7 +267,7 @@ pub mod jsffi {
         ) -> Pin<&'a mut ContextOptions>;
         #[rust_name = "class_static_blocks"]
         fn classStaticBlocks(self: &ContextOptions) -> bool;
-        #[rust_name = "set_ergonomic_brand_checks"]
+        #[rust_name = "set_ergnomic_brand_checks"]
         fn setErgnomicBrandChecks<'a>(
             self: Pin<&mut ContextOptions>,
             ergnomic_brand_checks: bool,
