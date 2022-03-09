@@ -58,10 +58,21 @@ pub mod jsffi {
     }
 
     #[repr(u32)]
+    #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
     #[namespace = "JS"]
     enum SourceOwnership {
         Borrowed = 0,
         TakeOwnership = 1,
+    }
+
+
+    #[repr(i32)]
+    #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+    #[namespace = "JS"]
+    pub enum WeakRefSpecifier {
+        Disabled = 0,
+        EnabledWithCleanupSome = 1,
+        EnabledWithoutCleanupSome = 2,
     }
 
     struct CompileOptionsParams {
@@ -87,7 +98,11 @@ pub mod jsffi {
         #[namespace = "JS"]
         type ContextOptions;
         #[namespace = "JS"]
+        type RealmCreationOptions;
+        #[namespace = "JS"]
         type SourceOwnership;
+        #[namespace = "JS"]
+        type WeakRefSpecifier;
         #[namespace = "JS"]
         type Value = crate::jsval::Value;
         #[namespace = "JS"]
@@ -272,5 +287,43 @@ pub mod jsffi {
             self: Pin<&mut ContextOptions>,
             ergnomic_brand_checks: bool,
         ) -> Pin<&'a mut ContextOptions>;
+
+        #[rust_name = "creation_options"]
+        fn creationOptions(self: Pin<&mut RealmOptions>) -> Pin<&mut RealmCreationOptions>;
+
+        #[rust_name = "set_streams_enabled"]
+        fn setStreamsEnabled(self: Pin<&mut RealmCreationOptions>, enabled: bool) -> Pin<&mut RealmCreationOptions>;
+        #[rust_name = "streams_enabled"]
+        fn getStreamsEnabled(self: &RealmCreationOptions) -> bool;
+
+        #[rust_name = "set_readable_byte_streams_enabled"]
+        fn setReadableByteStreamsEnabled(self: Pin<&mut RealmCreationOptions>, enabled: bool) -> Pin<&mut RealmCreationOptions>;
+        #[rust_name = "get_readable_byte_streams_enabled"]
+        fn getReadableByteStreamsEnabled(self: &RealmCreationOptions) -> bool;
+
+        #[rust_name = "set_byob_stream_readers_enabled"]
+        fn setBYOBStreamReadersEnabled(self: Pin<&mut RealmCreationOptions>, enabled: bool) -> Pin<&mut RealmCreationOptions>;
+        #[rust_name = "get_byob_stream_readers_enabled"]
+        fn getBYOBStreamReadersEnabled(self: &RealmCreationOptions) -> bool;
+
+        #[rust_name = "set_readable_stream_pipe_to_enabled"]
+        fn setReadableStreamPipeToEnabled(self: Pin<&mut RealmCreationOptions>, enabled: bool) -> Pin<&mut RealmCreationOptions>;
+        #[rust_name = "get_readable_stream_pipe_to_enabled"]
+        fn getReadableStreamPipeToEnabled(self: &RealmCreationOptions) -> bool;
+
+        #[rust_name = "set_writable_streams_enabled"]
+        fn setWritableStreamsEnabled(self: Pin<&mut RealmCreationOptions>, enabled: bool) -> Pin<&mut RealmCreationOptions>;
+        #[rust_name = "get_writable_streams_enabled"]
+        fn getWritableStreamsEnabled(self: &RealmCreationOptions) -> bool;
+
+        #[rust_name = "set_iterator_helpers_enabled"]
+        fn setIteratorHelpersEnabled(self: Pin<&mut RealmCreationOptions>, enabled: bool) -> Pin<&mut RealmCreationOptions>;
+        #[rust_name = "get_iterator_helpers_enabled"]
+        fn getIteratorHelpersEnabled(self: &RealmCreationOptions) -> bool;
+
+        #[rust_name = "set_weak_refs_enabled"]
+        fn setWeakRefsEnabled(self: Pin<&mut RealmCreationOptions>, specifier: WeakRefSpecifier) -> Pin<&mut RealmCreationOptions>;
+        #[rust_name = "get_weak_refs_enabled"]
+        fn getWeakRefsEnabled(self: &RealmCreationOptions) -> WeakRefSpecifier;
     }
 }
