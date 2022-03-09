@@ -149,8 +149,12 @@ pub mod jsffi {
         fn JS_Init() -> bool;
         fn JS_ShutDown();
 
+        #[rust_name = "make_default_global_class"]
         fn MakeDefaultGlobalClass() -> UniquePtr<JSClass>;
+
+        #[rust_name = "make_default_realm_options"]
         fn MakeDefaultRealmOptions() -> UniquePtr<RealmOptions>;
+
         unsafe fn MakeOwningCompileOptions(
             context: *mut JSContext,
             opts: &CompileOptionsParams,
@@ -175,9 +179,16 @@ pub mod jsffi {
         unsafe fn LeaveRealm(context: *mut JSContext, old_realm: *mut Realm);
 
         #[namespace = "JS"]
+        #[rust_name = "undefined_value"]
         fn UndefinedValue() -> Value;
+
+        #[rust_name = "to_int32"]
         fn toInt32(self: &Value) -> i32;
+
+        #[rust_name = "is_string"]
         fn isString(self: &Value) -> bool;
+
+        #[rust_name = "to_string"]
         fn toString(self: &Value) -> *mut JSString;
 
         unsafe fn MakeUtf8UnitSourceText(

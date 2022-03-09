@@ -22,13 +22,13 @@ mod integration {
 
     #[test]
     fn eval() {
-        let global_class = jsffi::MakeDefaultGlobalClass();
+        let global_class = jsffi::make_default_global_class();
         let context = init_engine();
 
         unsafe {
             assert!(jsffi::InitDefaultSelfHostedCode(context));
 
-            let realm_opts = jsffi::MakeDefaultRealmOptions();
+            let realm_opts = jsffi::make_default_realm_options();
             let mut global_object = jsgc::Rooted::default();
             global_object.init(
                 context,
@@ -51,7 +51,7 @@ mod integration {
                 },
             );
 
-            let mut undefined_value = jsffi::UndefinedValue();
+            let mut undefined_value = jsffi::undefined_value();
             let rval = jsgc::MutableHandle {
                 ptr: &mut undefined_value,
                 _marker: PhantomData,
@@ -67,7 +67,7 @@ mod integration {
 
             jsffi::Utf8SourceEvaluate(context, &owning_compile_options, source.pin_mut(), rval);
 
-            let result = undefined_value.toInt32();
+            let result = undefined_value.to_int32();
             assert_eq!(result, 42);
         }
 
