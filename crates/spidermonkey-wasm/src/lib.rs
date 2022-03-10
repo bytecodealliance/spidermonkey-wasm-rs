@@ -6,7 +6,7 @@ pub mod runtime;
 pub mod utf8_source;
 
 pub use spidermonkey_wasm_sys::jsffi::{
-    JSClass, JSContext, JSObject, OnNewGlobalHookOption, RealmOptions,
+    JSClass, JSContext, JSObject, OnNewGlobalHookOption, RealmOptions, WeakRefSpecifier,
 };
 
 pub use spidermonkey_wasm_sys::jsrealm::JSAutoRealm;
