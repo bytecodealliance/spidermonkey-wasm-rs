@@ -5,11 +5,12 @@ use crate::{
 use spidermonkey_wasm_sys::{
     jsffi::{
         DefaultHeapMaxBytes, DisableIncrementalGC, InitDefaultSelfHostedCode, JSContext, JSRuntime,
-        JSScript, JS_DestroyContext, JS_ExecuteScript, JS_GetRuntime, JS_Init, JS_NewContext,
-        JS_SetGCParameter, JS_ShutDown, NonIncrementalGC, OwningCompileOptions, PrepareForFullGC,
-        UseInternalJobQueues, Utf8SourceCompile, Utf8SourceEvaluate,
+        JSScript, JS_DestroyContext, JS_ExecuteScript, JS_GetRuntime, JS_Init, JS_MaybeGC,
+        JS_NewContext, JS_SetGCCallbackWrapper, JS_SetGCParameter, JS_ShutDown, NonIncrementalGC,
+        OwningCompileOptions, PrepareForFullGC, UseInternalJobQueues, Utf8SourceCompile,
+        Utf8SourceEvaluate,
     },
-    jsgc::{JSGCOptions, JSGCParamKey, JSGCReason},
+    jsgc::{JSGCOptions, JSGCParamKey, JSGCReason, OnJSGCCallback},
 };
 
 use anyhow::{bail, Result};
@@ -83,7 +84,15 @@ impl Runtime {
         unsafe { NonIncrementalGC(self.context, opts, reason) };
     }
 
-    // TODO(@saulecabrera) Add api to set gc callback
+    pub fn set_gc_callback(&self, callback: OnJSGCCallback) {
+        unsafe {
+            JS_SetGCCallbackWrapper(self.context, callback);
+        }
+    }
+
+    pub fn maybe_gc(&self) {
+        unsafe { JS_MaybeGC(self.context) };
+    }
 
     pub fn compile(
         &self,

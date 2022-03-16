@@ -4,8 +4,18 @@ use spidermonkey_wasm::{
     js, root,
     runtime::Runtime,
     utf8_source::Utf8Source,
-    JSAutoRealm,
+    JSAutoRealm, JSContext, JSGCReason, JSGCStatus, OnJSGCCallback,
 };
+
+extern "C" fn gc_callback(
+    _: *mut JSContext,
+    status: JSGCStatus,
+    reason: JSGCReason,
+    _: *mut std::os::raw::c_void,
+) {
+    println!("GC: {:?}", reason);
+    println!("GC: {:?}", status);
+}
 
 fn main() {
     let runtime = Runtime::new().unwrap();
@@ -19,6 +29,8 @@ fn main() {
 
     let global_object_handle = global_object.handle();
     let _ar = JSAutoRealm::new(context, global_object_handle.get());
+
+    runtime.set_gc_callback(OnJSGCCallback(gc_callback));
 
     do_loop(&runtime, global_object_handle);
 }
@@ -48,6 +60,8 @@ fn eval(runtime: &Runtime, buffer: &str, at: usize) {
         .unwrap_or_else(|_| {
             js::report_exception(context).unwrap();
         });
+
+    runtime.maybe_gc();
 
     let result = fmt_result(&runtime, ret_val.handle());
 

@@ -12,4 +12,7 @@ pub use spidermonkey_wasm_sys::jsffi::{
 pub use spidermonkey_wasm_sys::jsrealm::JSAutoRealm;
 
 // Re-export low-level Rooted types for macro convenience
-pub use spidermonkey_wasm_sys::jsgc::Rooted as RawRooted;
+// and for GC callback definition
+pub use spidermonkey_wasm_sys::jsgc::{
+    JSGCReason, JSGCStatus, OnJSGCCallback, Rooted as RawRooted,
+};
