@@ -45,6 +45,8 @@ impl_extern_type!(
 impl_extern_type!(jsffi::JSGCParamKey, "JSGCParamKey", cxx::kind::Trivial);
 impl_extern_type!(jsffi::GCOptions, "JS::GCOptions", cxx::kind::Trivial);
 impl_extern_type!(jsffi::GCReason, "JS::GCReason", cxx::kind::Trivial);
+impl_extern_type!(jsffi::JSGCCallback, "JSGCCallback", cxx::kind::Trivial);
+impl_extern_type!(jsffi::JSGCStatus, "JSGCStatus", cxx::kind::Trivial);
 
 #[cxx::bridge]
 pub mod jsffi {
@@ -94,6 +96,7 @@ pub mod jsffi {
         type Utf8UnitSourceText;
         type JSString;
 
+        type JSGCStatus = crate::jsgc::JSGCStatus;
         #[namespace = "JS"]
         type ContextOptions;
         #[namespace = "JS"]
@@ -155,7 +158,15 @@ pub mod jsffi {
         #[namespace = "JS"]
         unsafe fn NonIncrementalGC(context: *mut JSContext, options: GCOptions, reason: GCReason);
         type JSGCParamKey = crate::jsgc::JSGCParamKey;
+
+        type JSGCCallback = crate::jsgc::OnJSGCCallback;
+
         unsafe fn JS_SetGCParameter(context: *mut JSContext, param_key: JSGCParamKey, value: u32);
+        unsafe fn JS_MaybeGC(context: *mut JSContext);
+
+        // TODO: Support *mut c_void so that we can drop the wrapper definition and use the
+        // real function type exposed by SpiderMonkey
+        unsafe fn JS_SetGCCallbackWrapper(context: *mut JSContext, callback: JSGCCallback);
 
         unsafe fn JS_GetRuntime(context: *mut JSContext) -> *mut JSRuntime;
         unsafe fn JS_NewContext(max_bytes: u32, parent: *mut JSRuntime) -> *mut JSContext;

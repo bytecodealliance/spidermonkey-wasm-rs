@@ -251,3 +251,20 @@ pub enum JSGCReason {
     NoReason = 99,
     NumReasons = 100,
 }
+
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub enum JSGCStatus {
+    JsgcBegin = 0,
+    JsgcEnd = 1,
+}
+
+#[repr(transparent)]
+pub struct OnJSGCCallback(
+    pub  extern "C" fn(
+        context: *mut JSContext,
+        status: JSGCStatus,
+        reason: JSGCReason,
+        data: *mut std::os::raw::c_void,
+    ),
+);

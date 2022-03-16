@@ -91,3 +91,7 @@ bool ReportException(JSContext* context) {
   return true;
 }
 
+void JS_SetGCCallbackWrapper(JSContext* context, JSGCCallback callback) {
+  JS_SetGCCallback(context, callback, nullptr);
+}
+

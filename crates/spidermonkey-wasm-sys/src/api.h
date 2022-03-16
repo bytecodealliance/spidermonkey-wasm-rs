@@ -64,3 +64,5 @@ bool Utf8IsCompilableUnit(JSContext* context, JS::HandleObject global, rust::Str
 rust::String JSStringToRustString(JSContext* context, JS::HandleString str);
 
 bool ReportException(JSContext* context);
+
+void JS_SetGCCallbackWrapper(JSContext* context, JSGCCallback callback);
