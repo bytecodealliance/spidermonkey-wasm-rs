@@ -56,6 +56,18 @@ jobs:
       - name: Install cargo-wasi
         run: cargo install cargo-wasi
 
+      - name: Debug build
+        run: |
+          cd crates/spidermonkey-wasm
+          cargo build
+          cd -
+
+      - name: Release build
+        run: |
+          cd crates/spidermonkey-wasm
+          cargo build --release
+          cd -
+
       - name: Test sys
         run: |
           cd crates/spidermonkey-wasm-sys
