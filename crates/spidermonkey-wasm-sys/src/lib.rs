@@ -1,5 +1,6 @@
 extern crate link_cplusplus;
 
+pub mod jsclass;
 pub mod jsgc;
 pub mod jsrealm;
 pub mod jsval;
@@ -17,6 +18,7 @@ macro_rules! impl_extern_type {
 }
 
 impl_extern_type!(jsffi::JSAutoRealm, "JSAutoRealm", cxx::kind::Opaque);
+impl_extern_type!(jsffi::JSClass, "JSClass", cxx::kind::Opaque);
 impl_extern_type!(jsffi::RootingContext, "RootingContext", cxx::kind::Opaque);
 impl_extern_type!(jsffi::RootKind, "JS::RootKind", cxx::kind::Trivial);
 impl_extern_type!(jsffi::Value, "JS::Value", cxx::kind::Trivial);
@@ -89,12 +91,19 @@ pub mod jsffi {
         type JSObject;
         type JSRuntime;
         type JSContext;
-        type JSClass;
+        type JSClass = crate::jsclass::JSClass;
         type JSScript;
         type JSPrincipals;
         type RootingContext = crate::jsgc::RootingContext;
         type Utf8UnitSourceText;
         type JSString;
+        type JSClassOps;
+        #[namespace = "js"]
+        type ClassSpec;
+        #[namespace = "js"]
+        type ClassExtension;
+        #[namespace = "js"]
+        type ObjectOps;
 
         type JSGCStatus = crate::jsgc::JSGCStatus;
         #[namespace = "JS"]
@@ -176,8 +185,11 @@ pub mod jsffi {
         fn JS_Init() -> bool;
         fn JS_ShutDown();
 
-        #[rust_name = "make_default_global_class"]
-        fn MakeDefaultGlobalClass() -> UniquePtr<JSClass>;
+        #[rust_name = "default_global_class_ops"]
+        fn DefaultGlobalClassOps() -> *const JSClassOps;
+
+        #[rust_name = "js_class_global_flags"]
+        fn JSClassGlobalFlags() -> u32;
 
         #[rust_name = "make_default_realm_options"]
         fn MakeDefaultRealmOptions() -> UniquePtr<RealmOptions>;

@@ -152,11 +152,6 @@ mod tests {
     fn cx() {
         let rt = Runtime::new().unwrap();
         assert!(!rt.cx().is_null());
-    }
-
-    #[test]
-    fn rt() {
-        let rt = Runtime::new().unwrap();
         assert!(!rt.rt().is_null());
     }
 }

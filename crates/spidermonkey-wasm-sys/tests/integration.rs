@@ -1,6 +1,6 @@
 mod integration {
     use spidermonkey_wasm_sys::jsffi::JS_NewPlainObject;
-    use spidermonkey_wasm_sys::{jsffi, jsgc, jsrealm};
+    use spidermonkey_wasm_sys::{jsclass, jsffi, jsgc, jsrealm};
     use std::marker::PhantomData;
     use std::ptr;
 
@@ -22,7 +22,15 @@ mod integration {
 
     #[test]
     fn eval() {
-        let global_class = jsffi::make_default_global_class();
+        let global_class: jsclass::JSClass = jsclass::JSClass {
+            name: "global\0".as_ptr() as *const i8,
+            flags: jsffi::js_class_global_flags(),
+            c_ops: jsffi::default_global_class_ops(),
+            spec: std::ptr::null(),
+            ext: std::ptr::null(),
+            o_ops: std::ptr::null(),
+        };
+
         let context = init_engine();
 
         unsafe {
@@ -34,7 +42,7 @@ mod integration {
                 context,
                 jsffi::JS_NewGlobalObject(
                     context,
-                    &*global_class,
+                    &global_class,
                     ptr::null_mut(),
                     jsffi::OnNewGlobalHookOption::FireOnNewGlobalHook,
                     &realm_opts,
@@ -79,7 +87,6 @@ mod integration {
                 JS_NewPlainObject(context),
             );
             assert!(persistent.initialized());
-
         }
 
         shutdown_engine(context);

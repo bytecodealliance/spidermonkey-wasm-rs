@@ -5,7 +5,7 @@ mod compile {
     };
 
     #[test]
-    fn compile() {
+    fn compile_and_compile_fail() {
         let runtime = Runtime::new().unwrap();
         let global_class = js::make_default_global_class();
         let context = runtime.cx();
@@ -34,21 +34,6 @@ mod compile {
             .unwrap();
         let result = return_value.get().to_int32();
         assert_eq!(result, 42);
-    }
-
-    #[test]
-    fn compile_fail() {
-        let runtime = Runtime::new().unwrap();
-        let global_class = js::make_default_global_class();
-        let context = runtime.cx();
-
-        let realm_opts = js::make_default_realm_options();
-        root!(with(context);
-            let global_object = js::new_global_object(runtime.cx(), &global_class, &realm_opts);
-        );
-
-        let global_object_handle = global_object.handle();
-        let _ar = JSAutoRealm::new(context, global_object_handle.get());
 
         let mut script = Utf8Source::new(context, "invalid syntax").unwrap();
         let compile_opts = CompilationOptions::new(context, 1, false, "eval.js".into()).unwrap();

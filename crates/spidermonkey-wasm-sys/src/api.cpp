@@ -95,3 +95,12 @@ void JS_SetGCCallbackWrapper(JSContext* context, JSGCCallback callback) {
   JS_SetGCCallback(context, callback, nullptr);
 }
 
+const JSClassOps* DefaultGlobalClassOps() {
+  return &JS::DefaultGlobalClassOps;
+}
+
+uint32_t JSClassGlobalFlags() {
+  return JSCLASS_GLOBAL_FLAGS;
+}
+
+
