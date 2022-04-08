@@ -66,7 +66,7 @@ fn bridge(lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>, profile: &st
     let mut builder = cxxbridge("src/lib.rs");
 
     if profile == "debug-build" {
-        builder.define("DEBUG", "");
+        builder.define("DEBUG", None);
     }
 
     builder
