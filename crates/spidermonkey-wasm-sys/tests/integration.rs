@@ -69,24 +69,19 @@ mod integration {
 
             let result = undefined_value.to_int32();
             assert_eq!(result, 42);
-        }
+            global_object.remove_from_root_stack();
 
-        shutdown_engine(context);
-    }
-
-    #[test]
-    fn init_persistent_rooted() {
-        let context = init_engine();
-        let mut persistent = jsffi::MakeUninitPersistentRootedObject();
-        assert!(!persistent.initialized());
-        unsafe {
+            let mut persistent = jsffi::MakeUninitPersistentRootedObject();
+            assert!(!persistent.initialized());
             jsffi::InitPersistentRootedObject(
                 persistent.pin_mut(),
                 context,
                 JS_NewPlainObject(context),
             );
+            assert!(persistent.initialized());
+
         }
-        assert!(persistent.initialized());
+
         shutdown_engine(context);
     }
 }
