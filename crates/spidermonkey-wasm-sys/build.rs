@@ -12,7 +12,10 @@ fn main() {
     let out_dir = env::var_os("OUT_DIR")
         .map(PathBuf::from)
         .expect("could not find OUT_DIR");
-    let source_dir = PathBuf::from(SPIDERMONKEY_BUILD_DIR);
+
+    let profile = derive_profile();
+
+    let source_dir = PathBuf::from(SPIDERMONKEY_BUILD_DIR).join(profile);
     let source_include_dir = source_dir.join("include");
     let source_lib_dir = source_dir.join("lib");
 
@@ -51,7 +54,7 @@ fn main() {
     println!("cargo:rustc-link-lib=static=js_static");
     println!("cargo:rustc-link-lib=static=c++abi");
     println!("cargo:rustc-link-lib=static=clang_rt.builtins-wasm32");
-    bridge(&out_lib_dir, &out_include_dir);
+    bridge(&out_lib_dir, &out_include_dir, &profile);
 
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=src/api.h");
@@ -59,8 +62,13 @@ fn main() {
     println!("cargo:rerun-if-changed=src/lib.rs");
 }
 
-fn bridge(lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
+fn bridge(lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>, profile: &str) {
     let mut builder = cxxbridge("src/lib.rs");
+
+    if profile == "debug-build" {
+        builder.define("DEBUG", None);
+    }
+
     builder
         .cpp(true)
         .cpp_link_stdlib("c++")
@@ -97,4 +105,13 @@ fn bridge(lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>) {
     }
 
     builder.opt_level(2).compile("spidermonkey-wasm");
+}
+
+fn derive_profile() -> &'static str {
+    let profile = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
+    match profile.as_str() {
+        "debug" => "debug-build",
+        "release" => "release-build",
+        _ => panic!("Unsupported profile: {}", profile),
+    }
 }

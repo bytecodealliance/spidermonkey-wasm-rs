@@ -66,3 +66,7 @@ rust::String JSStringToRustString(JSContext* context, JS::HandleString str);
 bool ReportException(JSContext* context);
 
 void JS_SetGCCallbackWrapper(JSContext* context, JSGCCallback callback);
+
+const JSClassOps* DefaultGlobalClassOps();
+
+uint32_t JSClassGlobalFlags();

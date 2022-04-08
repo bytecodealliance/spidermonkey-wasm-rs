@@ -26,13 +26,6 @@ mod realm_opts {
             realm_creation_opts.get_weak_refs_enabled(),
             WeakRefSpecifier::EnabledWithCleanupSome
         );
-    }
-
-    #[test]
-    fn unset() {
-        let _runtime = Runtime::new().unwrap();
-        let mut realm_opts = js::make_default_realm_options();
-        let mut realm_creation_opts = realm_opts.pin_mut().creation_options();
 
         realm_creation_opts = realm_creation_opts
             .set_streams_enabled(false)

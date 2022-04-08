@@ -1,14 +1,15 @@
 use anyhow::{bail, Result};
 use spidermonkey_wasm_sys::jsffi::{
-    context_options_ref as raw_context_options_ref, ContextOptions, JSClass, JSContext, JSObject,
-    JSString, JSStringToRustString, JS_NewGlobalObject, OnNewGlobalHookOption, RealmOptions,
-    ReportException, RunJobs, ToString, Utf8IsCompilableUnit,
+    context_options_ref as raw_context_options_ref, default_global_class_ops,
+    js_class_global_flags, ContextOptions, JSContext, JSObject, JSString, JSStringToRustString,
+    JS_NewGlobalObject, OnNewGlobalHookOption, RealmOptions, ReportException, RunJobs, ToString,
+    Utf8IsCompilableUnit,
 };
 
+use spidermonkey_wasm_sys::jsclass::JSClass;
+
 // Re-exports of safe bindings from the sys crate
-pub use spidermonkey_wasm_sys::jsffi::{
-    make_default_global_class, make_default_realm_options, undefined_value,
-};
+pub use spidermonkey_wasm_sys::jsffi::{make_default_realm_options, undefined_value};
 
 use crate::handle::{HandleObject, HandleString, HandleValue};
 
@@ -27,6 +28,17 @@ pub fn new_global_object(
             OnNewGlobalHookOption::FireOnNewGlobalHook,
             opts,
         )
+    }
+}
+
+pub fn make_default_global_class() -> JSClass {
+    JSClass {
+        name: b"global\0".as_ptr() as *const i8,
+        flags: js_class_global_flags(),
+        c_ops: default_global_class_ops(),
+        spec: std::ptr::null(),
+        ext: std::ptr::null(),
+        o_ops: std::ptr::null(),
     }
 }
 

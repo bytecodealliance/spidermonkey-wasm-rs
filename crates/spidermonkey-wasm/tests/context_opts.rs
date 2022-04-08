@@ -2,7 +2,7 @@ mod context_opts {
     use spidermonkey_wasm::{js, runtime::Runtime};
 
     #[test]
-    fn set() {
+    fn set_unset() {
         let runtime = Runtime::new().unwrap();
         let context = runtime.cx();
         let mut opts_ref = js::context_options_ref(context);
@@ -16,13 +16,6 @@ mod context_opts {
         assert!(opts_ref.private_class_fields());
         assert!(opts_ref.private_class_methods());
         assert!(opts_ref.class_static_blocks());
-    }
-
-    #[test]
-    fn unset() {
-        let runtime = Runtime::new().unwrap();
-        let context = runtime.cx();
-        let mut opts_ref = js::context_options_ref(context);
 
         opts_ref = opts_ref
             .set_private_class_fields(false)
