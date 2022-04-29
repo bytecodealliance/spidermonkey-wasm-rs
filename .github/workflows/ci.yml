@@ -51,8 +51,8 @@ jobs:
             ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
             ${{ runner.os }}-cargo-target
       
-      - name: Install wasmtime-cli
-        run: cargo install wasmtime-cli
+      - name: Install wasmtime
+        run: install wasmtime-cli --version 0.35.0
 
       - name: Install cargo-wasi
         run: cargo install cargo-wasi
