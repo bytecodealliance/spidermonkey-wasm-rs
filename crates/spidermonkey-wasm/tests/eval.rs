@@ -4,11 +4,17 @@ mod eval {
         utf8_source::Utf8Source, JSAutoRealm,
     };
 
+    use spidermonkey_wasm_sys::jsffi::js_set_gc_zeal;
+
     #[test]
     fn eval() {
         let runtime = Runtime::new().unwrap();
         let global_class = js::make_default_global_class();
         let context = runtime.cx();
+
+        unsafe {
+            js_set_gc_zeal(context, 2, 1);
+        }
 
         let realm_opts = js::make_default_realm_options();
         root!(with(context);

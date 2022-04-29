@@ -21,3 +21,6 @@ link-cplusplus = { version = "1.0", features = ["nothing"] }
 fs_extra = "1.2.0"
 walkdir = "2"
 cxx-build = "1.0"
+
+[features]
+moz_debug = []
