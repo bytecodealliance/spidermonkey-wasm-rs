@@ -108,7 +108,12 @@ fn bridge(lib_dir: impl AsRef<Path>, include_dir: impl AsRef<Path>, profile: &st
 }
 
 fn derive_profile() -> &'static str {
-    let profile = env::var("PROFILE").unwrap_or_else(|_| "debug".to_string());
+    let mut profile = env::var("PROFILE").unwrap_or_else(|_| "debug".into());
+
+    if cfg!(feature = "moz_debug") {
+        profile = "debug".into();
+    }
+
     match profile.as_str() {
         "debug" => "debug-build",
         "release" => "release-build",

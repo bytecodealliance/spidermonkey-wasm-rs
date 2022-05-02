@@ -368,5 +368,9 @@ pub mod jsffi {
         ) -> Pin<&mut RealmCreationOptions>;
         #[rust_name = "get_weak_refs_enabled"]
         fn getWeakRefsEnabled(self: &RealmCreationOptions) -> WeakRefSpecifier;
+
+        #[cfg(feature = "moz_debug")]
+        #[rust_name = "js_set_gc_zeal"]
+        unsafe fn JS_SetGCZeal(context: *mut JSContext, zeal: u8, freq: u32);
     }
 }
