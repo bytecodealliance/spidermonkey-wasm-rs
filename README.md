@@ -10,7 +10,7 @@
 
 ## Requirements
 - [cargo-wasi](https://github.com/bytecodealliance/cargo-wasi) for testing
-- Rust 1.56
+- Rust 1.57.0
 - WASI-SDK 12 at /opt/wasi-sdk/wasi-sdk-12.0 (can be downloaded by executing `sudo ./update-wasi-sdk.sh`)
 
 ## Development
