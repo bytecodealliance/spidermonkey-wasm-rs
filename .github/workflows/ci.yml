@@ -90,8 +90,7 @@ jobs:
 
       - name: Check repl-example
         run: |
-          cd crates/repl-example
-          ./build.sh check
+          ./build.sh check -p repl-example 
 
       - name: Lint
         run: cargo fmt -- --check
