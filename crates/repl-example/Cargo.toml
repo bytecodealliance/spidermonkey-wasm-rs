@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 spidermonkey-wasm = { path = "../spidermonkey-wasm" }
 anyhow = "1.0.55"
-promptly = "0.3.0"
+promptly = "=0.3.0"
